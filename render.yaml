@@ -15,7 +15,6 @@ services:
   # Frontend Static Site
   - type: static
     name: medicure-frontend
-    env: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     publishDir: dist
@@ -24,4 +23,4 @@ services:
         fromService:
           type: web
           name: medicure-backend
-          property: host
+          property: url
