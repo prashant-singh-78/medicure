@@ -23,7 +23,7 @@ export default function VisualChecker({ addToast }) {
     formData.append('file', selectedFile);
 
     try {
-      const res = await fetch('/api/visual-check/analyze', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/visual-check/analyze', {
         method: 'POST',
         body: formData,
       });

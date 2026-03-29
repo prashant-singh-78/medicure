@@ -22,7 +22,7 @@ export default function AboutDisease({ addToast }) {
   };
 
   useEffect(() => {
-    fetch('/api/disease-info/list')
+    fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/disease-info/list')
       .then(res => res.json())
       .then(data => {
         setDiseases(data);

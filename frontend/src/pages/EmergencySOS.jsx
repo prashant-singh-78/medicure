@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 
 export default function EmergencySOS({ addToast }) {
   const [location, setLocation] = useState(null);
+  const [manualLocation, setManualLocation] = useState('');
   const [isLocating, setIsLocating] = useState(false);
   const [isAlerting, setIsAlerting] = useState(false);
+  const [errorInfo, setErrorInfo] = useState('');
   const [contacts, setContacts] = useState([
     { name: 'Home / Family', number: '9988776655' },
     { name: 'Dr. Rajesh', number: '9876543210' }
@@ -11,16 +13,17 @@ export default function EmergencySOS({ addToast }) {
 
   const handleSOS = () => {
     setIsAlerting(true);
+    const locString = location ? `GPS: ${location.lat}, ${location.lng}` : (manualLocation || 'Location unknown');
     addToast('🚨 EMERGENCY ALERT SENT! (Simulation)', 'error');
-    
+
     // Log SOS to history
-    fetch('/api/history', {
+    fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         activity_type: 'emergency',
         title: 'Emergency SOS Triggered',
-        details: `SOS alert activated at ${new Date().toLocaleTimeString()}. ${location ? `Location: ${location.lat}, ${location.lng}` : 'Location unknown.'}`
+        details: `SOS alert activated at ${new Date().toLocaleTimeString()}. Location info: ${locString}`
       })
     });
 
@@ -29,8 +32,18 @@ export default function EmergencySOS({ addToast }) {
 
   const getGeolocation = () => {
     setIsLocating(true);
+    setErrorInfo('');
+
+    if (!window.isSecureContext) {
+      setErrorInfo('Site is not running on a secure context (HTTPS or localhost). Geolocation is blocked by your browser.');
+      addToast('Security Block: Geolocation requires HTTPS or localhost.', 'error');
+      setIsLocating(false);
+      return;
+    }
+
     if (!navigator.geolocation) {
-      addToast('Geolocation is not supported by your browser.', 'error');
+      setErrorInfo('Geolocation is not supported by this browser.');
+      addToast('Geolocation not supported.', 'error');
       setIsLocating(false);
       return;
     }
@@ -41,10 +54,17 @@ export default function EmergencySOS({ addToast }) {
         setIsLocating(false);
         addToast('Location updated successfully.', 'success');
       },
-      () => {
-        addToast('Could not fetch location. Please allow permissions.', 'error');
+      (err) => {
+        let msg = 'Could not fetch location.';
+        if (err.code === 1) msg = 'Permission Denied. Please click the lock icon in the address bar and allow location.';
+        else if (err.code === 2) msg = 'Position Unavailable. Check your GPS/Internet connection.';
+        else if (err.code === 3) msg = 'Location request timed out.';
+
+        setErrorInfo(msg);
+        addToast(msg, 'error');
         setIsLocating(false);
-      }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
@@ -64,7 +84,7 @@ export default function EmergencySOS({ addToast }) {
         <div className="card" style={{ textAlign: 'center', borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.02)' }}>
           <div className="card-title" style={{ color: 'var(--accent-red)' }}>🆘 EMERGENCY BUTTON</div>
           <div style={{ margin: '40px 0' }}>
-            <button 
+            <button
               className={`sos-button ${isAlerting ? 'active' : ''}`}
               onClick={handleSOS}
               style={{
@@ -93,18 +113,32 @@ export default function EmergencySOS({ addToast }) {
             <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>📍 Your Current Location</span>
               <button onClick={getGeolocation} className="btn btn-outline" style={{ fontSize: '11px', padding: '4px 10px' }}>
-                {isLocating ? 'Locating...' : 'Refresh'}
+                {isLocating ? 'Locating...' : 'Refresh GPS'}
               </button>
             </div>
             {location ? (
               <div style={{ padding: '15px', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '12px', border: '1px solid rgba(59,130,246,0.1)' }}>
-                 <div style={{ fontSize: '15px', fontWeight: 'bold' }}>Latitude: {location.lat.toFixed(6)}</div>
-                 <div style={{ fontSize: '15px', fontWeight: 'bold' }}>Longitude: {location.lng.toFixed(6)}</div>
-                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>Approximate location coordinates fetched from GPS/WiFi.</p>
+                <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--accent-green)' }}>✓ GPS Location Active</div>
+                <div style={{ fontSize: '14px', marginTop: '5px' }}>Lat: {location.lat.toFixed(6)}, Lng: {location.lng.toFixed(6)}</div>
               </div>
             ) : (
-              <p style={{ color: 'var(--text-muted)' }}>Location permission required.</p>
+              <div style={{ padding: '15px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.1)' }}>
+                <p style={{ color: 'var(--accent-red)', fontSize: '13px', marginBottom: '10px' }}>⚠️ {errorInfo || 'Waiting for location...'}</p>
+                <div className="input-group" style={{ marginBottom: 0 }}>
+                  <label className="input-label" style={{ fontSize: '11px' }}>Manual Fallback: Enter Landmark / Address</label>
+                  <input
+                    className="input-field"
+                    placeholder="e.g. Near HDFC Bank, Sector 5..."
+                    value={manualLocation}
+                    onChange={(e) => setManualLocation(e.target.value)}
+                    style={{ fontSize: '13px' }}
+                  />
+                </div>
+              </div>
             )}
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '10px' }}>
+              💡 <strong>Tip:</strong> If auto-location fails, ensure you are on `localhost` and check browser permissions (lock icon in address bar).
+            </div>
           </div>
 
           <div className="card">

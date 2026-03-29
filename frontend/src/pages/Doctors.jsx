@@ -7,7 +7,7 @@ export default function Doctors({ addToast }) {
   const [formData, setFormData] = useState({ name: '', specialization: '', experience: '', contact: '', location: '' });
 
   const fetchDoctors = () => {
-    fetch('/api/doctors/list')
+    fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/doctors/list')
       .then(res => res.json())
       .then(data => { setDoctors(data); setLoading(false); })
       .catch(() => { addToast('Error loading doctors.', 'error'); setLoading(false); });
@@ -18,7 +18,7 @@ export default function Doctors({ addToast }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/doctors/register', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/doctors/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

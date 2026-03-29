@@ -35,7 +35,7 @@ export default function SkinAnalyzer({ addToast }) {
     setResult(null);
 
     try {
-      const res = await fetch('/api/skin/analyze', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/skin/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_base64: imageBase64 })
@@ -48,7 +48,7 @@ export default function SkinAnalyzer({ addToast }) {
         addToast('Skin analysis complete!', 'success');
         
         // Log to history
-        fetch('/api/history', {
+        fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

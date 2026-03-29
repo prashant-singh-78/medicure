@@ -35,14 +35,14 @@ export default function ReportAnalyzer({ addToast }) {
     try {
       const formData = new FormData();
       formData.append('file', imageFile);
-      const res = await fetch('/api/report/analyze', { method: 'POST', body: formData });
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/report/analyze', { method: 'POST', body: formData });
       const data = await res.json();
       
       if (res.ok) {
         setResult(data.analysis);
         addToast('Report analyzed successfully!', 'success');
         
-        fetch('/api/history', {
+        fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -46,7 +46,7 @@ export default function MedicineDetection({ addToast }) {
     try {
       const formData = new FormData();
       formData.append('file', imageFile);
-      const res = await fetch('/api/medicine/analyze-image', { method: 'POST', body: formData });
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/medicine/analyze-image', { method: 'POST', body: formData });
       const data = await res.json();
       setResult(data);
     } catch {
@@ -88,7 +88,7 @@ export default function MedicineDetection({ addToast }) {
     }
     setLoading(true);
     try {
-      const res = await fetch('/api/medicine/register', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/medicine/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(regForm)

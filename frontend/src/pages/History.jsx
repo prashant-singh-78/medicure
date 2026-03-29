@@ -10,7 +10,7 @@ export default function History({ addToast }) {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('/api/history');
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history');
       const data = await res.json();
       if (res.ok) {
         setHistory(data);
@@ -27,7 +27,7 @@ export default function History({ addToast }) {
     if (!window.confirm('Are you sure you want to clear all past data? This cannot be undone.')) return;
     
     try {
-      const res = await fetch('/api/history/clear/', { method: 'DELETE' });
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history/clear/', { method: 'DELETE' });
       if (res.ok) {
         setHistory([]);
         addToast('History cleared successfully', 'success');

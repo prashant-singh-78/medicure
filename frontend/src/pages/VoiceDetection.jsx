@@ -60,7 +60,7 @@ export default function VoiceDetection({ addToast }) {
       const formData = new FormData();
       formData.append('file', audioBlob, 'recording.webm');
       formData.append('disease', disease);
-      const res = await fetch('/api/voice/analyze', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/voice/analyze', {
         method: 'POST', body: formData,
       });
       const data = await res.json();

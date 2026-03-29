@@ -18,6 +18,7 @@ import HealingMusic from './pages/HealingMusic';
 import MedicineReminder from './pages/MedicineReminder';
 import VisualChecker from './pages/VisualChecker';
 import EmergencySOS from './pages/EmergencySOS';
+import Ayurveda from './pages/Ayurveda';
 import Toast from './components/Toast';
 
 const navItems = [
@@ -36,6 +37,7 @@ const navItems = [
   { id: 'reminders', label: 'Reminders', icon: '⏰' },
   { id: 'visual-checker', label: 'AI Vision Checker', icon: '📸' },
   { id: 'sos', label: 'Emergency SOS', icon: '🆘' },
+  { id: 'ayurveda', label: 'Ayurveda', icon: '🪴' },
   { id: 'history', label: 'Past Data', icon: '📆' },
   { id: 'friend-chat', label: 'Friend Chat', icon: '💬' },
 ];
@@ -48,6 +50,18 @@ export default function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [authView, setAuthView] = useState('login'); // 'login' or 'register'
   const [toasts, setToasts] = useState([]);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark';
+  });
+
+  React.useEffect(() => {
+    document.body.className = theme === 'light' ? 'light-theme' : 'dark-theme';
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   const addToast = (message, type = 'info') => {
     const id = Date.now();
@@ -80,12 +94,13 @@ export default function App() {
     if (activePage === 'reminders') return <MedicineReminder addToast={addToast} />;
     if (activePage === 'visual-checker') return <VisualChecker addToast={addToast} />;
     if (activePage === 'sos') return <EmergencySOS addToast={addToast} />;
+    if (activePage === 'ayurveda') return <Ayurveda addToast={addToast} />;
     return null;
   };
 
   if (!user) {
     return (
-      <div className="auth-wrapper">
+      <div className={`auth-wrapper ${theme === 'light' ? 'light-theme' : 'dark-theme'}`}>
         {authView === 'login' ? (
           <Login setAuth={setUser} addToast={addToast} switchToRegister={() => setAuthView('register')} />
         ) : (
@@ -98,7 +113,7 @@ export default function App() {
 
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${theme === 'light' ? 'light-theme' : 'dark-theme'}`}>
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-logo">
@@ -121,9 +136,17 @@ export default function App() {
           </div>
         ))}
 
-        <div className="sidebar-footer" style={{ borderTop: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="sidebar-footer" style={{ borderTop: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button 
+            className="btn btn-outline" 
+            style={{ width: '100%', justifyContent: 'center', fontSize: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+            onClick={toggleTheme}
+          >
+            {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+          </button>
+          
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '12px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: 'white' }}>
               {user.full_name?.[0] || 'U'}
             </div>
             <div style={{ textAlign: 'left', overflow: 'hidden' }}>
@@ -134,7 +157,7 @@ export default function App() {
           <button className="btn btn-outline" style={{ border: 'none', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-red)', width: '100%', justifyContent: 'center', fontSize: '12px' }} onClick={handleLogout}>
             🚪 Logout
           </button>
-          <div style={{ marginTop: '10px' }}>Medicure AI v2.0 © 2026</div>
+          <div style={{ marginTop: '8px' }}>Medicure AI v2.0 © 2026</div>
         </div>
       </aside>
 

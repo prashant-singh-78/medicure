@@ -16,7 +16,7 @@ export default function MedicineReminder({ addToast }) {
 
   const fetchReminders = async () => {
     try {
-      const res = await fetch('/api/reminder/');
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/reminder/');
       const data = await res.json();
       if (res.ok) setReminders(data);
     } catch {
@@ -30,7 +30,7 @@ export default function MedicineReminder({ addToast }) {
     if (!newReminder.medicine_name) return;
 
     try {
-      const res = await fetch('/api/reminder/', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/reminder/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newReminder)

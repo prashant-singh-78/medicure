@@ -44,7 +44,7 @@ export default function FriendChat({ addToast }) {
       .map(m => ({ role: m.role, text: m.text }));
 
     try {
-      const res = await fetch('/api/friend-chat/message', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/friend-chat/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text.trim(), history: historyForApi })

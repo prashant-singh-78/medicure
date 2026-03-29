@@ -13,7 +13,7 @@ export default function DiseasePrediction({ addToast }) {
     setLoading(true); 
     setResult(null);
     try {
-      const res = await fetch('/api/disease/predict', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/disease/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symptoms })
@@ -24,7 +24,7 @@ export default function DiseasePrediction({ addToast }) {
         setResult(data);
         addToast('Prediction complete!', 'success');
         
-        fetch('/api/history', {
+        fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

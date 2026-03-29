@@ -11,7 +11,7 @@ export default function Meditation({ addToast }) {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    fetch('/api/meditation/techniques')
+    fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/meditation/techniques')
       .then(res => res.json())
       .then(data => setTechniques(data))
       .catch(() => addToast('Error loading techniques.', 'error'));

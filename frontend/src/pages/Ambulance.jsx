@@ -7,7 +7,7 @@ export default function Ambulance({ addToast }) {
   const [formData, setFormData] = useState({ vehicle_number: '', contact: '', location: '', type: 'Basic' });
 
   const fetchAmbulances = () => {
-    fetch('/api/ambulance/list')
+    fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/ambulance/list')
       .then(res => res.json())
       .then(data => { setAmbulances(data); setLoading(false); })
       .catch(() => { addToast('Error loading ambulances.', 'error'); setLoading(false); });
@@ -18,7 +18,7 @@ export default function Ambulance({ addToast }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/ambulance/register', {
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/ambulance/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
