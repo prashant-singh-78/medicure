@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Dashboard from './pages/Dashboard';
 import VoiceDetection from './pages/VoiceDetection';
+import AboutApp from './pages/AboutApp';
 import MedicineDetection from './pages/MedicineDetection';
 import ReportAnalyzer from './pages/ReportAnalyzer';
 import DiseasePrediction from './pages/DiseasePrediction';
@@ -19,10 +20,12 @@ import MedicineReminder from './pages/MedicineReminder';
 import VisualChecker from './pages/VisualChecker';
 import EmergencySOS from './pages/EmergencySOS';
 import Ayurveda from './pages/Ayurveda';
+import BMICalculator from './pages/BMICalculator';
 import Toast from './components/Toast';
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
+  { id: 'about-app', label: 'About Platform', icon: 'ℹ️' },
   { id: 'meditation', label: 'Meditation', icon: '🧘' },
   { id: 'voice', label: 'Voice Analysis', icon: '🎤' },
   { id: 'verify-medicine', label: 'Medicine Check', icon: '💊' },
@@ -38,6 +41,7 @@ const navItems = [
   { id: 'visual-checker', label: 'AI Vision Checker', icon: '📸' },
   { id: 'sos', label: 'Emergency SOS', icon: '🆘' },
   { id: 'ayurveda', label: 'Ayurveda', icon: '🪴' },
+  { id: 'bmi', label: 'BMI Calculator', icon: '⚖️' },
   { id: 'history', label: 'Past Data', icon: '📆' },
   { id: 'friend-chat', label: 'Friend Chat', icon: '💬' },
 ];
@@ -78,6 +82,7 @@ export default function App() {
 
   const renderPage = () => {
     if (activePage === 'dashboard') return <Dashboard setActivePage={setActivePage} />;
+    if (activePage === 'about-app') return <AboutApp />;
     if (activePage === 'voice') return <VoiceDetection addToast={addToast} />;
     if (activePage === 'verify-medicine') return <MedicineDetection addToast={addToast} />;
     if (activePage === 'disease') return <DiseasePrediction addToast={addToast} />;
@@ -95,6 +100,7 @@ export default function App() {
     if (activePage === 'visual-checker') return <VisualChecker addToast={addToast} />;
     if (activePage === 'sos') return <EmergencySOS addToast={addToast} />;
     if (activePage === 'ayurveda') return <Ayurveda addToast={addToast} />;
+    if (activePage === 'bmi') return <BMICalculator addToast={addToast} />;
     return null;
   };
 
@@ -137,14 +143,14 @@ export default function App() {
         ))}
 
         <div className="sidebar-footer" style={{ borderTop: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <button 
-            className="btn btn-outline" 
+          <button
+            className="btn btn-outline"
             style={{ width: '100%', justifyContent: 'center', fontSize: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)' }}
             onClick={toggleTheme}
           >
             {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
           </button>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '12px' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: 'white' }}>
               {user.full_name?.[0] || 'U'}

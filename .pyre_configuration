@@ -1,0 +1,10 @@
+{
+  "source_directories": [
+    "backend",
+    "ml_workspace"
+  ],
+  "search_path": [
+    "backend/venv/Lib/site-packages"
+  ],
+  "strict": false
+}

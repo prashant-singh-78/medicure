@@ -4,20 +4,20 @@
 /* ===== CSS Variables ===== */
 :root {
   /* Default (Dark Theme) */
-  --bg-primary: #0a0f1e;
-  --bg-secondary: #0f172a;
-  --bg-card: #1e293b;
-  --accent-blue: #3b82f6;
-  --accent-cyan: #06b6d4;
+  --bg-primary: #12100a;
+  --bg-secondary: #1a1610;
+  --bg-card: #262015;
+  --accent-blue: #d4af37;
+  --accent-cyan: #e63946;
   --accent-green: #10b981;
   --accent-red: #ef4444;
   --accent-yellow: #f59e0b;
-  --accent-purple: #8b5cf6;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border: rgba(255,255,255,0.08);
-  --glow-blue: 0 0 20px rgba(59,130,246,0.35);
+  --accent-purple: #cfa860;
+  --text-primary: #fefcf3;
+  --text-secondary: #d1c7ad;
+  --text-muted: #8b8066;
+  --border: rgba(212, 175, 55, 0.15);
+  --glow-blue: 0 0 20px rgba(212, 175, 55, 0.35);
   --glow-green: 0 0 20px rgba(16,185,129,0.35);
   --glow-red: 0 0 20px rgba(239,68,68,0.35);
   --radius: 16px;
@@ -28,22 +28,22 @@
 }
 
 .light-theme {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
+  --bg-primary: #fdfbf7;
+  --bg-secondary: #f6f3eb;
   --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border: rgba(0,0,0,0.08);
-  --glow-blue: 0 8px 20px rgba(59,130,246,0.15);
+  --text-primary: #3d311d;
+  --text-secondary: #6b5c43;
+  --text-muted: #a3957e;
+  --border: rgba(212, 175, 55, 0.2);
+  --glow-blue: 0 8px 20px rgba(212, 175, 55, 0.25);
   --glow-green: 0 8px 20px rgba(16,185,129,0.15);
   --glow-red: 0 8px 20px rgba(239,68,68,0.15);
   --sidebar-bg: #ffffff;
-  --sidebar-border: rgba(0,0,0,0.06);
+  --sidebar-border: rgba(212, 175, 55, 0.15);
 }
 
 .dark-theme {
-  --sidebar-bg: #0f172a;
+  --sidebar-bg: #1a1610;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
