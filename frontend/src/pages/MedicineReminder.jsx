@@ -66,41 +66,45 @@ export default function MedicineReminder({ addToast }) {
 
       <div className="dash-grid" style={{ gridTemplateColumns: '1fr 2fr' }}>
         {/* Add Reminder Card */}
-        <div className="card">
+        <div className="glass-card">
           <div className="card-title">➕ Add New Reminder</div>
           <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div className="input-group">
-              <label>Medicine Name</label>
+            <div className="premium-input-group">
+              <label className="premium-label">Medicine Name</label>
               <input 
                 type="text" 
+                className="premium-input"
                 placeholder="e.g. Paracetamol" 
                 value={newReminder.medicine_name}
                 onChange={e => setNewReminder({...newReminder, medicine_name: e.target.value})}
                 required
               />
             </div>
-            <div className="input-group">
-              <label>Dosage</label>
+            <div className="premium-input-group">
+              <label className="premium-label">Dosage</label>
               <input 
                 type="text" 
+                className="premium-input"
                 placeholder="e.g. 500mg" 
                 value={newReminder.dosage}
                 onChange={e => setNewReminder({...newReminder, dosage: e.target.value})}
               />
             </div>
             <div style={{ display: 'flex', gap: '15px' }}>
-              <div className="input-group" style={{ flex: 1 }}>
-                <label>Time</label>
+              <div className="premium-input-group" style={{ flex: 1 }}>
+                <label className="premium-label">Time</label>
                 <input 
                   type="time" 
+                  className="premium-input"
                   value={newReminder.time}
                   onChange={e => setNewReminder({...newReminder, time: e.target.value})}
                   required
                 />
               </div>
-              <div className="input-group" style={{ flex: 1 }}>
-                <label>Frequency</label>
+              <div className="premium-input-group" style={{ flex: 1 }}>
+                <label className="premium-label">Frequency</label>
                 <select 
+                  className="premium-input"
                   value={newReminder.days}
                   onChange={e => setNewReminder({...newReminder, days: e.target.value})}
                 >
@@ -115,27 +119,20 @@ export default function MedicineReminder({ addToast }) {
         </div>
 
         {/* Reminders List */}
-        <div className="card">
+        <div className="glass-card">
           <div className="card-title">🕒 Your Schedule</div>
           {loading ? (
             <p style={{ color: 'var(--text-muted)' }}>Loading reminders...</p>
           ) : reminders.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '40px', marginBottom: '10px' }}>📅</div>
-              <p>No reminders set. Add your first medicine to stay healthy!</p>
+            <div className="empty-state-premium">
+              <div className="empty-state-icon">📅</div>
+              <h3 style={{color: 'var(--text-primary)', marginBottom: '8px', fontSize: '18px'}}>Your schedule is clear</h3>
+              <p style={{color: 'var(--text-muted)', fontSize: '14px'}}>Add your first medicine reminder to stay healthy!</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {reminders.map(r => (
-                <div key={r.id} className="reminder-item" style={{ 
-                  background: 'rgba(255,255,255,0.03)', 
-                  padding: '16px', 
-                  borderRadius: '12px', 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  border: '1px solid var(--border-color)'
-                }}>
+                <div key={r.id} className="reminder-item-premium">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div style={{ background: 'var(--accent-green)', color: '#fff', width: '45px', height: '45px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                       💊
@@ -159,7 +156,7 @@ export default function MedicineReminder({ addToast }) {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: '24px', background: 'rgba(59, 130, 246, 0.05)', borderColor: 'rgba(59, 130, 246, 0.2)' }}>
+      <div className="glass-card" style={{ marginTop: '24px', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.08), rgba(6, 182, 212, 0.05))', borderColor: 'rgba(59, 130, 246, 0.3)' }}>
         <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
           💡 <strong>Pro Tip:</strong> Consistency is key! Aim to take your medication at the same time every day for maximum effectiveness.
         </p>

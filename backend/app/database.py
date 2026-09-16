@@ -121,8 +121,8 @@ def init_db():
 
     if db.query(DiseaseInfo).count() == 0:
         # Look for CSV in the backend root directory (for Render) or up one level
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        csv_path = os.path.join(base_dir, "Desease dataset.csv")
+        project_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        csv_path = os.path.join(project_dir, "ml_workspace", "data", "disease_dataset.csv")
         if os.path.exists(csv_path):
             try:
                 import csv

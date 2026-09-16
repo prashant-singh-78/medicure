@@ -84,7 +84,7 @@ def train_model(dataset_dir, model_save_path):
     print("Training model...")
     model.fit(
         train_generator,
-        epochs=3, # Kept short for quick proof of concept, can be increased
+        epochs=10, # Increased for better accuracy
         validation_data=val_generator
     )
 
@@ -97,11 +97,10 @@ def train_model(dataset_dir, model_save_path):
     print(f"Model saved to {model_save_path}")
 
 if __name__ == "__main__":
-    SOURCE = r"c:\Users\prash\OneDrive\Desktop\fy project\acne"
-    DEST = r"c:\Users\prash\OneDrive\Desktop\fy project\smart-health-assistant\backend\app\models\skin_dataset_organized"
-    MODEL_PATH = r"c:\Users\prash\OneDrive\Desktop\fy project\smart-health-assistant\backend\app\models\skin_model.h5"
+    DEST = os.path.join(os.path.dirname(__file__), "skin_dataset_organized")
+    MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "models", "skin_model.h5")
     
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     
-    organize_dataset(SOURCE, DEST)
+    # Dataset is already organized, so we skip organize_dataset
     train_model(DEST, MODEL_PATH)

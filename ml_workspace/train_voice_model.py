@@ -26,7 +26,7 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 
 # Config
 DATA_URL  = "https://archive.ics.uci.edu/ml/machine-learning-databases/parkinsons/parkinsons.data"
-DATA_FILE = os.path.join(os.path.dirname(__file__), "parkinsons.data")
+DATA_FILE = os.path.join(os.path.dirname(__file__), "data", "parkinsons.data")
 MODEL_OUT = os.path.join(os.path.dirname(__file__), "../backend/models/voice_model.pkl")
 PLOT_OUT  = os.path.join(os.path.dirname(__file__), "confusion_matrix.png")
 

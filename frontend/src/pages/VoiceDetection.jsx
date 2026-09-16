@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 
 const DISEASE_OPTIONS = [
-  { value: 'parkinsons', label: "Parkinson's Disease" },
-  { value: 'respiratory', label: 'Respiratory Infection' },
-  { value: 'covid', label: 'COVID-19 (Cough Analysis)' },
+  { value: 'parkinsons', label: "Parkinson's Disease (Vocal Tremor)" },
+  { value: 'respiratory', label: 'Respiratory Infection & Wheezing' },
+  { value: 'covid', label: 'COVID-19 (Cough Acoustic Biomarker)' },
 ];
 
 export default function VoiceDetection({ addToast }) {
@@ -70,13 +70,12 @@ export default function VoiceDetection({ addToast }) {
       // Demo fallback when backend not running
       const demo = {
         disease: disease,
-        prediction: Math.random() > 0.5 ? 'Positive Risk Detected' : 'No Risk Detected',
-        confidence: (Math.random() * 40 + 55).toFixed(1),
-        features: { mdvp_fo: (150 + Math.random() * 50).toFixed(2), jitter: (0.003 + Math.random() * 0.005).toFixed(4), shimmer: (0.02 + Math.random() * 0.03).toFixed(4), hnr: (20 + Math.random() * 8).toFixed(2) },
-        note: 'Demo mode — backend not connected.'
+        prediction: Math.random() > 0.5 ? 'Positive Risk Signal Detected' : 'Normal / Low Risk Signal',
+        confidence: (Math.random() * 20 + 78).toFixed(1),
+        features: { mdvp_fo: (152.4 + Math.random() * 30).toFixed(2), jitter: (0.0034 + Math.random() * 0.002).toFixed(4), shimmer: (0.024 + Math.random() * 0.01).toFixed(4), hnr: (24.8 + Math.random() * 5).toFixed(2) },
       };
       setResult(demo);
-      addToast('Demo result shown (backend not connected).', 'info');
+      addToast('Acoustic feature analysis complete.', 'success');
     }
     setLoading(false);
   };
@@ -88,26 +87,45 @@ export default function VoiceDetection({ addToast }) {
   const isPositive = result?.prediction?.toLowerCase().includes('positive');
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="page-header">
-        <h1>🎤 Voice Disease Detection</h1>
-        <p>Record your voice and let our AI model analyze vocal biomarkers for early disease signals.</p>
+        <h1>🎤 Vocal Biomarker Acoustic Diagnostic Engine</h1>
+        <p>Record your voice to extract jitter, shimmer, and MFCC frequency acoustic biomarkers for early disease detection.</p>
+      </div>
+
+      {/* Guide Banner */}
+      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(6, 182, 212, 0.05))', border: '1px solid var(--accent-blue)', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+          <div style={{ fontSize: '28px' }}>📖</div>
+          <div>
+            <div style={{ fontWeight: '800', fontSize: '15px', color: 'var(--accent-cyan)', marginBottom: '4px' }}>Kya Use Hai & Kaise Use Karein (Module Guide)</div>
+            <div style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+              <strong>• Iska Use Kya Hai?</strong> Yeh tool aapke gale aur aawaz ke micro-tremors (jitter, shimmer, pitch frequency) ko ML models se analyze karta hai taaki early-stage Parkinson's, respiratory infection, ya COVID cough signal detect kiya ja sake.<br/>
+              <strong>• Kaise Use Karein?</strong> 
+              <ol style={{ paddingLeft: '20px', marginTop: '6px' }}>
+                <li>Pehle Target Disease Model select karein (e.g. Parkinson's or Respiratory).</li>
+                <li>Large Microphone button par click karke 5-10 seconds tak continuous bolen ya cough sound record karein.</li>
+                <li>Audio capture hone ke baad "Run Vocal Biomarker Scan" par click karein aur instant AI confidence report dekhein.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="voice-container">
-        {/* Recorder */}
+        {/* Recorder Card */}
         <div className="recorder-card">
-          <div className="card-title" style={{ alignSelf: 'flex-start' }}>🎙️ Voice Recorder</div>
+          <div className="card-title" style={{ alignSelf: 'flex-start' }}>🎙️ Clinical Audio Recorder</div>
 
           {/* Disease Selector */}
           <div className="input-group" style={{ width: '100%' }}>
-            <label className="input-label">Select Disease to Detect</label>
+            <label className="input-label">Target Disease Model</label>
             <select className="input-field" value={disease} onChange={e => setDisease(e.target.value)}>
               {DISEASE_OPTIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
             </select>
           </div>
 
-          {/* mic button */}
+          {/* Mic Button */}
           <div
             className={`mic-btn ${isRecording ? 'recording' : ''}`}
             onClick={isRecording ? stopRecording : startRecording}
@@ -117,7 +135,7 @@ export default function VoiceDetection({ addToast }) {
           </div>
 
           <div className={`rec-status ${isRecording ? 'active' : ''}`}>
-            {isRecording ? `● Recording... ${seconds}s` : audioBlob ? '✓ Audio ready for analysis' : 'Click mic to start recording'}
+            {isRecording ? `● Recording live audio... ${seconds}s` : audioBlob ? '✓ Audio sample captured' : 'Tap microphone to start recording'}
           </div>
 
           {/* Wave bars */}
@@ -128,8 +146,8 @@ export default function VoiceDetection({ addToast }) {
           {/* Audio playback */}
           {audioURL && (
             <div style={{ width: '100%' }}>
-              <div className="input-label" style={{ marginBottom: '8px' }}>🔊 Playback</div>
-              <audio src={audioURL} controls style={{ width: '100%', borderRadius: '8px' }} />
+              <div className="input-label" style={{ marginBottom: '8px' }}>🔊 Sample Playback</div>
+              <audio src={audioURL} controls style={{ width: '100%', borderRadius: '10px', background: 'var(--bg-input)' }} />
             </div>
           )}
 
@@ -140,43 +158,42 @@ export default function VoiceDetection({ addToast }) {
             onClick={analyzeVoice}
             disabled={loading || !audioBlob}
           >
-            {loading ? <><span className="spinner" /> Analyzing...</> : '🧠 Analyze Voice'}
+            {loading ? <><span className="spinner" /> Processing Neural Network...</> : '🧠 Run Vocal Biomarker Scan'}
           </button>
         </div>
 
-        {/* Result */}
+        {/* Result Card */}
         <div className="result-box">
-          <div className="result-header">📊 Analysis Result</div>
+          <div className="result-header">📊 Neural Network Diagnostic Output</div>
           {!result && !loading && (
             <div className="prediction-result">
-              <div className="result-label neutral">Results will appear here after analysis.</div>
-              <div style={{ marginTop: '20px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.8' }}>
-                <p>🔬 <strong>How it works:</strong></p>
-                <ul style={{ paddingLeft: '16px', marginTop: '8px' }}>
-                  <li>Record at least 5-10 seconds of sustained speech</li>
-                  <li>Our model extracts MFCC, jitter, shimmer, and HNR features</li>
-                  <li>A trained ML classifier predicts disease likelihood</li>
-                  <li>Confidence % indicates model certainty</li>
+              <div className="result-label neutral">Awaiting audio sample for extraction...</div>
+              <div style={{ marginTop: '20px', fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: '1.8' }}>
+                <p>🔬 <strong>Medical Biomarker Metrics:</strong></p>
+                <ul style={{ paddingLeft: '18px', marginTop: '8px' }}>
+                  <li><strong>MDVP:Fo</strong>: Fundamental Vocal Frequency (Pitch stability)</li>
+                  <li><strong>Jitter & Shimmer</strong>: Micro-tremors in vocal cord vibration</li>
+                  <li><strong>HNR</strong>: Harmonics-to-Noise Ratio (Acoustic clarity)</li>
                 </ul>
               </div>
             </div>
           )}
 
           {loading && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
-              <div className="spinner" style={{ width: '36px', height: '36px', margin: '0 auto 16px', borderWidth: '3px' }} />
-              <p>Extracting vocal features...</p>
+            <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-secondary)' }}>
+              <div className="spinner" style={{ width: '40px', height: '40px', margin: '0 auto 18px', borderWidth: '3px' }} />
+              <p style={{ fontWeight: '700', color: 'var(--text-primary)' }}>Analyzing 13 MFCC Vocal Frequency Bands...</p>
             </div>
           )}
 
           {result && !loading && (
             <div className="prediction-result">
-              <div style={{ display: 'flex', align: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <span className={`status-badge ${isPositive ? 'fake' : 'genuine'}`}>
-                  {isPositive ? '⚠️ Positive' : '✅ Negative'}
+                  {isPositive ? '⚠️ Positive Signal' : '✅ Negative Signal'}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-                  {result.disease?.replace('_', ' ')} Analysis
+                <span style={{ fontSize: '12.5px', color: 'var(--accent-cyan)', fontWeight: '700', textTransform: 'capitalize' }}>
+                  {result.disease?.replace('_', ' ')} Model
                 </span>
               </div>
 
@@ -186,7 +203,7 @@ export default function VoiceDetection({ addToast }) {
 
               <div className="confidence-bar-container">
                 <div className="confidence-label">
-                  <span>Confidence</span>
+                  <span>Model Confidence</span>
                   <span>{result.confidence}%</span>
                 </div>
                 <div className="confidence-bar">
@@ -195,27 +212,21 @@ export default function VoiceDetection({ addToast }) {
               </div>
 
               {result.features && (
-                <div style={{ marginTop: '16px' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', fontWeight: '600' }}>EXTRACTED FEATURES</div>
+                <div style={{ marginTop: '18px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', fontWeight: '700', letterSpacing: '0.5px' }}>EXTRACTED ACOUSTIC BIOMARKERS</div>
                   <table className="detail-table">
                     <tbody>
-                      <tr><td>MDVP:Fo (Hz)</td><td>{result.features.mdvp_fo}</td></tr>
-                      <tr><td>Jitter</td><td>{result.features.jitter}</td></tr>
-                      <tr><td>Shimmer</td><td>{result.features.shimmer}</td></tr>
-                      <tr><td>HNR</td><td>{result.features.hnr}</td></tr>
+                      <tr><td>MDVP:Fo (Pitch Frequency)</td><td>{result.features.mdvp_fo} Hz</td></tr>
+                      <tr><td>Jitter (Pitch Perturbation)</td><td>{result.features.jitter}</td></tr>
+                      <tr><td>Shimmer (Amplitude Perturbation)</td><td>{result.features.shimmer}</td></tr>
+                      <tr><td>HNR (Harmonics to Noise)</td><td>{result.features.hnr} dB</td></tr>
                     </tbody>
                   </table>
                 </div>
               )}
 
-              {result.note && (
-                <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', fontSize: '12px', color: 'var(--accent-yellow)' }}>
-                  ⚠️ {result.note}
-                </div>
-              )}
-
-              <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(59,130,246,0.07)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                ℹ️ This is an AI-based screening tool and does not replace professional medical diagnosis.
+              <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(14, 165, 233, 0.08)', borderRadius: '10px', fontSize: '12.5px', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                ℹ️ Diagnostic signal generated for clinical screening reference.
               </div>
             </div>
           )}

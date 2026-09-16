@@ -21,20 +21,20 @@ export default function BMICalculator({ addToast }) {
 
         if (bmiValue < 18.5) {
             category = 'Underweight';
-            color = '#38bdf8'; // Sky blue
-            advice = 'You may need to eat more frequently and choose nutrient-rich foods.';
+            color = 'var(--accent-blue)';
+            advice = 'You are below the recommended clinical range. Consider increasing caloric intake with protein & complex carbs.';
         } else if (bmiValue >= 18.5 && bmiValue <= 24.9) {
-            category = 'Normal weight';
-            color = '#4ade80'; // Green
-            advice = 'Maintain your current diet and physical activity levels.';
+            category = 'Optimal Health Weight';
+            color = 'var(--accent-green)';
+            advice = 'Your weight is within the ideal medical category. Maintain your physical activity and nutrient balance.';
         } else if (bmiValue >= 25 && bmiValue <= 29.9) {
             category = 'Overweight';
-            color = '#facc15'; // Yellow
-            advice = 'You might want to consider increasing your physical activity and monitoring your diet.';
+            color = 'var(--accent-yellow)';
+            advice = 'Slightly above optimal weight. Regular cardiovascular exercise and metabolic diet monitoring recommended.';
         } else {
-            category = 'Obese';
-            color = '#f87171'; // Red
-            advice = 'It is recommended to consult with a healthcare provider for personalized advice.';
+            category = 'Obese (High Risk)';
+            color = 'var(--accent-red)';
+            advice = 'Consult our hospital metabolic team for a clinical weight management and cardiovascular wellness plan.';
         }
 
         setResult({
@@ -54,111 +54,98 @@ export default function BMICalculator({ addToast }) {
     };
 
     return (
-        <div className="bmi-container">
+        <div className="animate-fade-in">
             <div className="page-header">
-                <h1>⚖️ Body Mass Index (BMI)</h1>
-                <p>Calculate your BMI to understand if you are at a healthy weight for your height.</p>
+                <h1>⚖️ Hospital BMI & Body Composition Meter</h1>
+                <p>Calculate your Body Mass Index (BMI) and evaluate your body weight classification.</p>
             </div>
 
-            <div className="card" style={{ maxWidth: '500px', margin: '0 auto' }}>
-                <form onSubmit={calculateBMI} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div className="form-group">
-                        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Weight (kg)</label>
-                        <input
-                            type="number"
-                            placeholder="e.g. 70"
-                            value={weight}
-                            onChange={(e) => setWeight(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                background: 'var(--bg-secondary)',
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', maxWidth: '900px', margin: '0 auto' }}>
+                <div className="card">
+                    <div className="card-title">📐 Patient Measurements</div>
+                    <form onSubmit={calculateBMI} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                        <div className="input-group">
+                            <label className="input-label">Body Weight (kg)</label>
+                            <input
+                                type="number"
+                                className="input-field"
+                                placeholder="e.g. 70"
+                                value={weight}
+                                onChange={(e) => setWeight(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Height (cm)</label>
+                            <input
+                                type="number"
+                                className="input-field"
+                                placeholder="e.g. 175"
+                                value={height}
+                                onChange={(e) => setHeight(e.target.value)}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                            <button type="submit" className="btn btn-primary" style={{ flex: 2, justifyContent: 'center' }}>
+                                Calculate BMI Index
+                            </button>
+                            <button type="button" onClick={reset} className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>
+                                Reset
+                            </button>
+                        </div>
+                    </form>
+
+                    <div style={{ marginTop: '24px', padding: '14px', background: 'var(--bg-input)', borderRadius: '12px', fontSize: '12.5px', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                        ℹ️ Standard WHO Formula: <code style={{ color: 'var(--accent-cyan)' }}>Weight (kg) / Height (m)²</code>
+                    </div>
+                </div>
+
+                <div>
+                    {result ? (
+                        <div className="card animate-fade-in" style={{ border: `1px solid ${result.color}`, textAlign: 'center' }}>
+                            <div className="card-title" style={{ justifyContent: 'center', color: 'var(--text-secondary)' }}>Calculated BMI Score</div>
+                            <div style={{ fontSize: '56px', fontWeight: '800', color: result.color, margin: '10px 0' }}>
+                                {result.value}
+                            </div>
+                            <div style={{
+                                display: 'inline-block',
+                                padding: '6px 20px',
+                                borderRadius: '20px',
+                                background: `${result.color}20`,
+                                color: result.color,
+                                fontWeight: '800',
+                                fontSize: '14px',
+                                marginBottom: '20px',
+                                border: `1px solid ${result.color}40`
+                            }}>
+                                {result.category}
+                            </div>
+
+                            <div style={{
+                                background: 'var(--bg-input)',
+                                padding: '18px',
+                                borderRadius: '12px',
+                                fontSize: '13.5px',
+                                lineHeight: '1.6',
                                 color: 'var(--text-primary)',
-                                fontSize: '16px'
-                            }}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Height (cm)</label>
-                        <input
-                            type="number"
-                            placeholder="e.g. 175"
-                            value={height}
-                            onChange={(e) => setHeight(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                background: 'var(--bg-secondary)',
-                                color: 'var(--text-primary)',
-                                fontSize: '16px'
-                            }}
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: '12px' }}>
-                            Calculate BMI
-                        </button>
-                        <button type="button" onClick={reset} className="btn btn-outline" style={{ flex: 1, padding: '12px' }}>
-                            Reset
-                        </button>
-                    </div>
-                </form>
-
-                {result && (
-                    <div style={{
-                        marginTop: '30px',
-                        padding: '24px',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        borderRadius: '16px',
-                        border: `1px solid ${result.color}`,
-                        textAlign: 'center',
-                        animation: 'fadeIn 0.5s ease-out'
-                    }}>
-                        <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Your BMI is</div>
-                        <div style={{ fontSize: '48px', fontWeight: 'bold', color: result.color, marginBottom: '8px' }}>
-                            {result.value}
+                                textAlign: 'left',
+                                border: '1px solid var(--border)'
+                            }}>
+                                <strong style={{ color: result.color }}>💡 Clinical Advice:</strong><br />
+                                {result.advice}
+                            </div>
                         </div>
-                        <div style={{
-                            display: 'inline-block',
-                            padding: '4px 16px',
-                            borderRadius: '20px',
-                            background: `${result.color}20`,
-                            color: result.color,
-                            fontWeight: '600',
-                            marginBottom: '16px'
-                        }}>
-                            {result.category}
+                    ) : (
+                        <div className="card" style={{ textAlign: 'center', padding: '50px 20px' }}>
+                            <div style={{ fontSize: '50px', marginBottom: '14px' }}>📊</div>
+                            <h3 style={{ fontSize: '16px', color: 'var(--text-primary)', marginBottom: '8px' }}>Enter Height & Weight</h3>
+                            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                Your BMI score and personalized clinical health category will be calculated instantly.
+                            </p>
                         </div>
-
-                        <div style={{
-                            background: 'var(--bg-secondary)',
-                            padding: '16px',
-                            borderRadius: '12px',
-                            fontSize: '14px',
-                            lineHeight: '1.6',
-                            color: 'var(--text-primary)',
-                            textAlign: 'left'
-                        }}>
-                            <strong>💡 Health Advice:</strong><br />
-                            {result.advice}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className="card" style={{ maxWidth: '500px', margin: '30px auto', fontSize: '13px', color: 'var(--text-muted)' }}>
-                <h4 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>What is BMI?</h4>
-                <p>
-                    Body Mass Index (BMI) is a simple index of weight-for-height that is commonly used to classify underweight,
-                    overweight and obesity in adults. It is defined as a person's weight in kilograms divided by the
-                    square of his height in meters (kg/m²).
-                </p>
+                    )}
+                </div>
             </div>
         </div>
     );
