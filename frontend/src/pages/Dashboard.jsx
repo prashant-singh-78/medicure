@@ -4,7 +4,7 @@ const stats = [
   { icon: '🎤', label: 'Voice Scans Today', value: '12', color: 'blue' },
   { icon: '💊', label: 'Medicines Verified', value: '47', color: 'green' },
   { icon: '⚠️', label: 'Fake Detected', value: '3', color: 'yellow' },
-  { icon: '🧠', label: 'AI Model Accuracy', value: '99.4%', color: 'purple' },
+  { icon: '🧠', label: 'AI Diagnostic Engine', value: 'v2.0 Multi-Modal', color: 'blue' },
 ];
 
 const hospitalDepartments = [
@@ -97,8 +97,8 @@ export default function Dashboard({ setActivePage }) {
             <div className="hospital-stat-lbl">Patients Served</div>
           </div>
           <div className="hospital-stat-item">
-            <div className="hospital-stat-num">99.4%</div>
-            <div className="hospital-stat-lbl">AI Diagnostic Accuracy</div>
+            <div className="hospital-stat-num">v2.0</div>
+            <div className="hospital-stat-lbl">Multi-Modal AI Engine</div>
           </div>
           <div className="hospital-stat-item">
             <div className="hospital-stat-num">24/7</div>

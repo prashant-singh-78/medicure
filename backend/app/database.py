@@ -4,7 +4,7 @@ This replaces the in-memory dict with a persistent database.
 """
 
 import os
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean, ForeignKey, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 
@@ -69,9 +69,13 @@ class DiseaseInfo(Base):
         
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False)
+    category = Column(String, default="General Medical")
+    description = Column(String, default="")
     symptoms = Column(String)
+    prevention = Column(String, default="")
     tests = Column(String)
     consultant = Column(String)
+    image = Column(String, default="")
 
 
 class User(Base):
@@ -80,6 +84,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String)
+    role = Column(String, default="user", nullable=False) # "user" | "admin"
     created_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
 
@@ -87,6 +92,7 @@ class User(Base):
 class History(Base):
     __tablename__ = "history"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     activity_type = Column(String, nullable=False) # e.g., disease, report, medicine
     title = Column(String, nullable=False)
     details = Column(String, nullable=False)
@@ -96,6 +102,7 @@ class History(Base):
 class Reminder(Base):
     __tablename__ = "reminders"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     medicine_name = Column(String, nullable=False)
     dosage = Column(String)
     time = Column(String, nullable=False) # e.g., "08:00"
@@ -107,6 +114,18 @@ class Reminder(Base):
 def init_db():
     """Create tables and seed initial data if empty."""
     Base.metadata.create_all(bind=engine)
+    # Safe non-destructive schema migration: ensure user_id column exists
+    try:
+        with engine.connect() as conn:
+            for t in ["history", "reminders"]:
+                cols = [r[1] for r in conn.exec_driver_sql(f"PRAGMA table_info({t})").fetchall()]
+                if "user_id" not in cols:
+                    conn.exec_driver_sql(f"ALTER TABLE {t} ADD COLUMN user_id INTEGER REFERENCES users(id)")
+            user_cols = [r[1] for r in conn.exec_driver_sql("PRAGMA table_info(users)").fetchall()]
+            if "role" not in user_cols:
+                conn.exec_driver_sql("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'user'")
+    except Exception:
+        pass
     db = SessionLocal()
     
     if db.query(Medicine).count() == 0:

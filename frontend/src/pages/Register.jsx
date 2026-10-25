@@ -25,7 +25,7 @@ export default function Register({ switchToLogin, addToast }) {
       } else {
         addToast(data.detail || 'Registration failed.', 'error');
       }
-    } catch (error) {
+    } catch {
       addToast('Error connecting to server.', 'error');
     } finally {
       setLoading(false);
@@ -36,7 +36,11 @@ export default function Register({ switchToLogin, addToast }) {
     <div className="auth-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <div className="card" style={{ width: '420px', padding: '40px' }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>🧬</div>
+          <img 
+            src="/brand_logo.png" 
+            alt="Medicure Logo" 
+            style={{ width: '60px', height: '60px', borderRadius: '16px', objectFit: 'cover', margin: '0 auto 16px', display: 'block', border: '2px solid var(--accent-red)', boxShadow: '0 0 20px rgba(244, 63, 94, 0.4)' }} 
+          />
           <h2 style={{ margin: 0, fontSize: '24px' }}>Create Account</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '8px' }}>Join Medicure AI Healthcare</p>
         </div>

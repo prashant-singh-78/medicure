@@ -197,6 +197,17 @@ body.light-theme, .light-theme {
   animation: rgbGlow 8s linear infinite;
 }
 
+.hospital-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 50%, #f43f5e 100%);
+  z-index: 2;
+}
+
 .hospital-badge {
   display: inline-flex;
   align-items: center;
@@ -966,6 +977,17 @@ body.light-theme, .light-theme {
   border: 1.5px solid rgba(56, 189, 248, 0.35);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), var(--glow-blue);
   animation: rgbGlow 8s linear infinite;
+}
+
+.hospital-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 50%, #f43f5e 100%);
+  z-index: 2;
 }
 
 /* ===== MOBILE NAVIGATION & DRAWER HELPER STYLES ===== */

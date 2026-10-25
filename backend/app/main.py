@@ -16,6 +16,8 @@ app.add_middleware(
 # Initialize DB on startup
 @app.on_event("startup")
 def on_startup():
+    from app.routes.auth import get_jwt_secret_key
+    get_jwt_secret_key()
     init_db()
 
 app.include_router(voice.router, prefix="/api/voice", tags=["Voice Detection"])
@@ -33,10 +35,19 @@ app.include_router(meditation.router, prefix="/api/meditation", tags=["Meditatio
 app.include_router(auth.router, prefix="/api/auth", tags=["User Authentication"])
 app.include_router(friend_chat.router, prefix="/api/friend-chat", tags=["Friend Chat"])
 
+import os
+from fastapi.staticfiles import StaticFiles
+
+# Mount static herbs assets if directory exists
+herbs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/public/herbs"))
+if os.path.exists(herbs_dir):
+    app.mount("/herbs", StaticFiles(directory=herbs_dir), name="herbs")
+
 @app.get("/")
 def root():
     return {"message": "Medicure API v2.0 is running!"}
 
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {"status": "ok", "version": "2.0"}

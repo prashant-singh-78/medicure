@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from app.database import get_db, Ambulance
+from app.database import get_db, Ambulance, User
+from app.routes.auth import get_admin_user
 
 router = APIRouter()
 
@@ -14,7 +15,8 @@ def register_ambulance(
     contact: str = Body(...),
     location: str = Body(None),
     type: str = Body("Basic"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(get_admin_user)
 ):
     new_amb = Ambulance(
         vehicle_number=vehicle_number,

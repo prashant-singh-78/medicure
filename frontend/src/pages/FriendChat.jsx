@@ -82,6 +82,7 @@ export default function FriendChat({ addToast }) {
             fontSize: '24px', boxShadow: '0 0 20px rgba(168,85,247,0.4)',
             flexShrink: 0
           }}>💜</div>
+          <img src="/brand_logo.png" alt="Medicure Brand Logo" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} />
           <div>
             <h1 style={{ margin: 0 }}>Friend Chat</h1>
             <p style={{ margin: 0, marginTop: '2px', color: 'var(--text-muted)', fontSize: '14px' }}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import VoiceDetection from './pages/VoiceDetection';
 import AboutApp from './pages/AboutApp';
@@ -71,6 +71,11 @@ const allNavItems = navCategories.flatMap(c => c.items);
 
 export default function App() {
   const [user, setUser] = useState(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      localStorage.removeItem('user');
+      return null;
+    }
     const saved = localStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
   });
@@ -83,7 +88,7 @@ export default function App() {
     return localStorage.getItem('theme') || 'dark';
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     document.body.className = theme === 'light' ? 'light-theme' : 'dark-theme';
     localStorage.setItem('theme', theme);
   }, [theme]);
@@ -106,22 +111,70 @@ export default function App() {
     addToast('Logged out successfully.', 'info');
   };
 
+  // Authoritative session verification on application initialization
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const verifySession = async () => {
+      try {
+        const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` },
+          signal: controller.signal
+        });
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+          addToast('Session expired. Please log in again.', 'warning');
+        } else if (res.ok) {
+          const freshData = await res.json();
+          localStorage.setItem('user', JSON.stringify(freshData));
+          setUser(prev => ({ ...(prev || {}), ...freshData }));
+        }
+      } catch (err) {
+        // Do not invalidate session on transient network disconnects or offline state
+        if (err.name !== 'AbortError') {
+          console.warn('Network offline or server unreachable; keeping local session state.');
+        }
+      }
+    };
+
+    verifySession();
+    return () => controller.abort();
+  }, []);
+
+  // Central event listener for 401 Unauthorized responses across protected components
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      addToast('Session expired. Please log in to continue.', 'warning');
+    };
+    window.addEventListener('medicure:session-expired', handleSessionExpired);
+    return () => window.removeEventListener('medicure:session-expired', handleSessionExpired);
+  }, []);
+
   const activeItem = allNavItems.find(item => item.id === activePage) || { label: 'Dashboard', icon: '📊' };
 
   const renderPage = () => {
     if (activePage === 'dashboard') return <Dashboard setActivePage={setActivePage} />;
     if (activePage === 'about-app') return <AboutApp setActivePage={setActivePage} />;
     if (activePage === 'voice') return <VoiceDetection addToast={addToast} />;
-    if (activePage === 'verify-medicine') return <MedicineDetection addToast={addToast} />;
+    if (activePage === 'verify-medicine') return <MedicineDetection addToast={addToast} user={user} />;
     if (activePage === 'disease') return <DiseasePrediction addToast={addToast} />;
     if (activePage === 'skin') return <SkinAnalyzer addToast={addToast} />;
     if (activePage === 'report') return <ReportAnalyzer addToast={addToast} />;
-    if (activePage === 'doctors') return <Doctors addToast={addToast} />;
-    if (activePage === 'ambulance') return <Ambulance addToast={addToast} />;
+    if (activePage === 'doctors') return <Doctors addToast={addToast} user={user} />;
+    if (activePage === 'ambulance') return <Ambulance addToast={addToast} user={user} />;
     if (activePage === 'about-disease') return <AboutDisease addToast={addToast} />;
     if (activePage === 'suggestion') return <MedicineSuggestion addToast={addToast} />;
     if (activePage === 'meditation') return <Meditation addToast={addToast} />;
-    if (activePage === 'history') return <History addToast={addToast} />;
+    if (activePage === 'history') return <History addToast={addToast} setActivePage={setActivePage} />;
     if (activePage === 'friend-chat') return <FriendChat addToast={addToast} />;
     if (activePage === 'healing-music') return <HealingMusic addToast={addToast} />;
     if (activePage === 'reminders') return <MedicineReminder addToast={addToast} />;
@@ -150,11 +203,18 @@ export default function App() {
     return (
       <div className={`standalone-about-wrapper ${theme === 'light' ? 'light-theme' : 'dark-theme'}`}>
         <div className="standalone-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className="logo-icon" style={{ fontSize: '26px' }}>🩺</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <img 
+              src="/brand_logo.png" 
+              alt="Medicure Logo" 
+              style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)' }} 
+            />
             <div>
-              <div style={{ fontWeight: '800', fontSize: '18px', color: 'var(--text-primary)' }}>Medicure Link</div>
-              <div style={{ fontSize: '11.5px', color: 'var(--accent-blue)', fontWeight: '600' }}>AI Health Suite Portal</div>
+              <div style={{ fontWeight: '800', fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Medicure Link
+                <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-yellow), var(--accent-red))', color: '#090d16', fontWeight: '800' }}>TRI-COLOR SUITE</span>
+              </div>
+              <div style={{ fontSize: '11.5px', color: 'var(--accent-blue)', fontWeight: '600' }}>AI Multi-Modal Health Portal</div>
             </div>
           </div>
 
@@ -211,10 +271,14 @@ export default function App() {
       {/* Sidebar */}
       <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="logo-icon">🩺</div>
+          <img 
+            src="/brand_logo.png" 
+            alt="Medicure Logo" 
+            style={{ width: '40px', height: '40px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} 
+          />
           <div className="logo-text">
             Medicure Link
-            <span>AI Health Suite</span>
+            <span>AI Multi-Modal Suite</span>
           </div>
           <button className="mobile-close-btn" onClick={() => setMobileMenuOpen(false)}>✕</button>
         </div>

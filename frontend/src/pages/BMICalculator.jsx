@@ -55,9 +55,16 @@ export default function BMICalculator({ addToast }) {
 
     return (
         <div className="animate-fade-in">
-            <div className="page-header">
-                <h1>⚖️ Hospital BMI & Body Composition Meter</h1>
-                <p>Calculate your Body Mass Index (BMI) and evaluate your body weight classification.</p>
+            <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                <img src="/brand_logo.png" alt="Medicure Brand Logo" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} />
+                <div>
+                    <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '800' }}>Hospital BMI & Body Composition Meter</h1>
+                    <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '13.5px' }}>Calculate your Body Mass Index (BMI) and evaluate your body weight classification.</p>
+                </div>
+            </div>
+
+            <div className="card" style={{ borderLeft: '4px solid var(--accent-yellow)', background: 'rgba(245, 158, 11, 0.08)', padding: '12px 18px', marginBottom: '20px' }}>
+                <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⚠️ Clinical Advisory:</span> BMI is a standard WHO screening index. It does not measure body fat percentage or muscle distribution.
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', maxWidth: '900px', margin: '0 auto' }}>
@@ -65,10 +72,11 @@ export default function BMICalculator({ addToast }) {
                     <div className="card-title">📐 Patient Measurements</div>
                     <form onSubmit={calculateBMI} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                         <div className="input-group">
-                            <label className="input-label">Body Weight (kg)</label>
+                            <label className="input-label" htmlFor="bmi-weight-input">Body Weight (kg)</label>
                             <input
                                 type="number"
                                 className="input-field"
+                                id="bmi-weight-input"
                                 placeholder="e.g. 70"
                                 value={weight}
                                 onChange={(e) => setWeight(e.target.value)}
@@ -76,10 +84,11 @@ export default function BMICalculator({ addToast }) {
                         </div>
 
                         <div className="input-group">
-                            <label className="input-label">Height (cm)</label>
+                            <label className="input-label" htmlFor="bmi-height-input">Height (cm)</label>
                             <input
                                 type="number"
                                 className="input-field"
+                                id="bmi-height-input"
                                 placeholder="e.g. 175"
                                 value={height}
                                 onChange={(e) => setHeight(e.target.value)}

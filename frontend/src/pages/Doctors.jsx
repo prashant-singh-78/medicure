@@ -69,16 +69,23 @@ export default function Doctors({ addToast }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/doctors/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`
+        },
         body: JSON.stringify(formData)
       });
+      const data = await res.json();
       if (res.ok) {
         addToast('Doctor registered successfully!', 'success');
         setShowForm(false);
         setFormData({ name: '', specialization: '', experience: '', contact: '', location: '' });
         fetchDoctors();
+      } else {
+        addToast(data.detail || 'Failed to register doctor. Admin authorization required.', 'error');
       }
     } catch {
       addToast('Failed to register doctor.', 'error');
@@ -86,7 +93,7 @@ export default function Doctors({ addToast }) {
   };
 
   const confirmAppointment = (docName) => {
-    addToast(`Appointment request sent to ${docName}. Confirmation SMS sent!`, 'success');
+    addToast(`Inquiry noted for ${docName}. Notice: Automated SMS is not active in demo mode; please call the clinic directly to confirm appointment availability.`, 'info');
     setBookingModal(null);
   };
 
@@ -232,9 +239,19 @@ export default function Doctors({ addToast }) {
               </select>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+            <div style={{ padding: '12px', background: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.3)', borderRadius: '10px', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '16px', lineHeight: '1.5' }}>
+              ℹ️ <strong>Demonstration Notice:</strong> Automated SMS confirmations and live hospital calendar sync are not active in this interface. Please call the clinic directly to confirm appointment availability.
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
+              <a href={`tel:${bookingModal.contact}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', textDecoration: 'none' }}>
+                📞 Call Clinic Directly: {bookingModal.contact}
+              </a>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
               <button className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setBookingModal(null)}>Cancel</button>
-              <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => confirmAppointment(bookingModal.name)}>Confirm Booking</button>
+              <button className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => confirmAppointment(bookingModal.name)}>Save Inquiry (Demo)</button>
             </div>
           </div>
         </div>

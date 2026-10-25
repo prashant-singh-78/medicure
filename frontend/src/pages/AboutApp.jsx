@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function AboutApp({ setActivePage, onEnterMainApp, isStandalone }) {
+export default function AboutApp({ setActivePage, onEnterMainApp }) {
   const [showServicesModal, setShowServicesModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -247,8 +247,8 @@ export default function AboutApp({ setActivePage, onEnterMainApp, isStandalone }
             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Multi-Modal AI Suite</div>
           </div>
           <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent-green)' }}>95%+ Accuracy</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Cross-Validated Models</div>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent-green)' }}>v2.0 Multi-Modal</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Calibrated AI Models</div>
           </div>
           <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
             <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent-red)' }}>24/7 SOS Care</div>

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from app.database import get_db, Doctor
+from app.database import get_db, Doctor, User
+from app.routes.auth import get_admin_user
 
 router = APIRouter()
 
@@ -15,7 +16,8 @@ def register_doctor(
     experience: str = Body(None),
     contact: str = Body(...),
     location: str = Body(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(get_admin_user)
 ):
     new_doc = Doctor(
         name=name,

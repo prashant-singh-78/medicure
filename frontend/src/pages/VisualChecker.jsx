@@ -31,6 +31,23 @@ export default function VisualChecker({ addToast }) {
       if (res.ok) {
         setAnalysis(data.analysis);
         addToast('Analysis complete!', 'success');
+
+        const token = localStorage.getItem('token');
+        if (token) {
+          const summarySnippet = typeof data.analysis === 'string' ? data.analysis.substring(0, 150) + '...' : 'Visual check completed';
+          fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              activity_type: 'skin',
+              title: `Visual Symptom Check: ${selectedFile?.name || 'Image Scan'}`,
+              details: summarySnippet
+            })
+          }).catch(e => console.error(e));
+        }
       } else {
         addToast(data.detail || 'Analysis failed.', 'error');
       }
@@ -41,22 +58,42 @@ export default function VisualChecker({ addToast }) {
   };
 
   const formatText = (text) => {
+    if (!text) return null;
     return text.split('\n').map((line, i) => {
-      if (line.startsWith('###')) return <h3 key={i} style={{ color: 'var(--accent-cyan)', marginTop: '15px' }}>{line.replace('###', '').trim()}</h3>;
-      if (line.startsWith('- **')) {
-        const [label, content] = line.replace('- **', '').split('**:');
-        return <p key={i} style={{ marginBottom: '8px' }}><strong style={{ color: 'var(--accent-purple)' }}>{label}:</strong>{content}</p>;
+      if (line.startsWith('###')) {
+        return <h3 key={i} style={{ color: 'var(--accent-cyan)', marginTop: '16px', marginBottom: '8px', fontSize: '17px', fontWeight: '800' }}>{line.replace('###', '').trim()}</h3>;
       }
-      if (line.startsWith('*Disclaimer:')) return <p key={i} style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>{line.replace('*', '').replace('*', '')}</p>;
-      return <p key={i} style={{ marginBottom: '5px' }}>{line}</p>;
+      if (line.startsWith('*Disclaimer:')) {
+        return <p key={i} style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '20px', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>{line.replace(/\*/g, '')}</p>;
+      }
+      let formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      return (
+        <span 
+          key={i} 
+          dangerouslySetInnerHTML={{ __html: formattedLine }} 
+          style={{ display: 'block', marginBottom: '6px' }} 
+        />
+      );
     });
   };
 
   return (
-    <div className="visual-checker-container">
-      <div className="page-header">
-        <h1>📸 AI Visual Checker</h1>
-        <p>Upload a clear photo of a skin rash, eye redness, or dental concern for an instant AI-powered preliminary analysis.</p>
+    <div className="visual-checker-container animate-fade-in">
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+        <img 
+          src="/brand_logo.png" 
+          alt="Medicure Brand Logo" 
+          style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} 
+        />
+        <div>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '800' }}>📸 AI Visual Symptom Checker</h1>
+          <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '13.5px' }}>Upload a clear photo of a skin rash, eye redness, or dental concern for an instant AI-powered preliminary analysis.</p>
+        </div>
+      </div>
+
+      <div className="card" style={{ borderLeft: '4px solid var(--accent-yellow)', background: 'rgba(245, 158, 11, 0.08)', padding: '12px 18px', marginBottom: '20px' }}>
+        <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⚠️ Clinical Advisory:</span> AI visual screening is designed for preliminary triage only. Ensure good lighting and focal sharpness.
       </div>
 
       <div className="dash-grid" style={{ gridTemplateColumns: 'minmax(300px, 1fr) 2fr' }}>

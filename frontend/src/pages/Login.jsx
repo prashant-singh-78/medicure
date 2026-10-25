@@ -26,29 +26,44 @@ export default function Login({ setAuth, switchToRegister, addToast }) {
       } else {
         addToast(data.detail || 'Login failed. Please check credentials.', 'error');
       }
-    } catch (error) {
-      // Demo login fallback if server isn't hit
-      const demoUser = { full_name: 'Patient User', email: email || 'patient@medicure.com' };
-      localStorage.setItem('user', JSON.stringify(demoUser));
-      setAuth(demoUser);
-      addToast('Welcome back to Medicure Hospital Portal!', 'success');
+    } catch {
+      addToast('Unable to connect to authentication server.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDemoLogin = () => {
-    const demoUser = { full_name: 'Demo Patient', email: 'demo.patient@medicure.org' };
-    localStorage.setItem('user', JSON.stringify(demoUser));
-    setAuth(demoUser);
-    addToast('Logged in as Demo Patient!', 'success');
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/auth/demo', {
+        method: 'POST'
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setAuth(data.user);
+        addToast('Logged in as Demo Patient (Authenticated Session)!', 'success');
+      } else {
+        addToast(data.detail || 'Demo login unavailable.', 'error');
+      }
+    } catch {
+      addToast('Error connecting to authentication service.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="auth-container animate-fade-in">
       <div className="card" style={{ padding: '42px 36px', border: '1px solid rgba(56, 189, 248, 0.3)', boxShadow: '0 25px 60px rgba(0,0,0,0.6)' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div className="logo-icon" style={{ width: '56px', height: '56px', fontSize: '28px', margin: '0 auto 16px', borderRadius: '16px' }}>🩺</div>
+          <img 
+            src="/brand_logo.png" 
+            alt="Medicure Logo" 
+            style={{ width: '60px', height: '60px', borderRadius: '16px', objectFit: 'cover', margin: '0 auto 16px', display: 'block', border: '2px solid var(--accent-red)', boxShadow: '0 0 20px rgba(244, 63, 94, 0.4)' }} 
+          />
           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)' }}>Medicure Hospital Portal</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', marginTop: '6px' }}>Secure Patient & Doctor Clinical Access</p>
         </div>
@@ -82,7 +97,7 @@ export default function Login({ setAuth, switchToRegister, addToast }) {
             {loading ? <span className="spinner"></span> : '🔐 Sign In to Health Suite'}
           </button>
 
-          <button type="button" onClick={handleDemoLogin} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '12px', padding: '10px', fontSize: '13px' }}>
+          <button type="button" onClick={handleDemoLogin} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '12px', padding: '10px', fontSize: '13px' }} disabled={loading}>
             ⚡ Instant Demo Patient Login
           </button>
         </form>

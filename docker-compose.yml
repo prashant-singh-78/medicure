@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medicure-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Secrets must be supplied in host environment or root .env (never hardcoded in compose file)
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-MedicureDemoSecretKey2026Minimum32CharsLengthRequired!}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      # Persist SQLite databases across container restarts without committing them to images
+      - medicure-db-data:/app/database
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=
+    container_name: medicure-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  medicure-db-data:
+    driver: local

@@ -10,6 +10,7 @@ export default function MedicineDetection({ addToast }) {
   const [tab, setTab] = useState('qr');
   const [qrCode, setQrCode] = useState('');
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -22,63 +23,96 @@ export default function MedicineDetection({ addToast }) {
 
   const verifyQR = async () => {
     if (!qrCode.trim()) { addToast('Please enter a medicine code!', 'error'); return; }
-    setLoading(true); setResult(null);
+    setLoading(true); setResult(null); setError(null);
     try {
-      const res = await fetch(`/api/medicine/verify?code=${encodeURIComponent(qrCode)}`);
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + `/api/medicine/verify?code=${encodeURIComponent(qrCode)}`);
       const data = await res.json();
-      setResult(data);
-    } catch {
-      if (qrCode.includes('FAKE')) {
-        setResult({ status: 'fake', name: 'Counterfeit Brand X', manufacturer: 'Unknown / Unlicensed', batch: 'FAKE-001', expiry: 'N/A', scans: 8 });
+      if (res.ok) {
+        setResult(data);
+        setError(null);
       } else {
-        setResult({ status: 'genuine', name: 'Paracetamol 500mg (IP Grade)', manufacturer: 'Sun Pharma Ltd', batch: 'B2024-01', expiry: '2026-06', scans: 3, confidence: 99.2 });
+        const errorMsg = data.detail || 'Medicine verification failed.';
+        setError(errorMsg);
+        addToast(errorMsg, 'error');
       }
+    } catch {
+      const errorMsg = 'Unable to connect to medicine verification service. Please verify backend is running and retry.';
+      setError(errorMsg);
+      addToast(errorMsg, 'error');
     }
     setLoading(false);
   };
 
   const analyzeImage = async () => {
     if (!imageFile) { addToast('Please upload an image first!', 'error'); return; }
-    setLoading(true); setResult(null);
+    setLoading(true); setResult(null); setError(null);
     try {
       const formData = new FormData();
       formData.append('file', imageFile);
       const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/medicine/analyze-image', { method: 'POST', body: formData });
       const data = await res.json();
-      setResult(data);
+      if (res.ok) {
+        setResult(data);
+        setError(null);
+      } else {
+        const errorMsg = data.detail || 'Medicine packaging analysis failed.';
+        setError(errorMsg);
+        addToast(errorMsg, 'error');
+      }
     } catch {
-      setResult({ status: 'genuine', name: 'Amoxicillin 250mg OCR Scan', manufacturer: 'Cipla Ltd.', batch: 'BATCH-8821', expiry: '2026-12', confidence: 96.8 });
+      const errorMsg = 'Unable to connect to packaging analysis service. Please verify backend is running and retry.';
+      setError(errorMsg);
+      addToast(errorMsg, 'error');
     }
     setLoading(false);
   };
 
   const searchExpanded = async () => {
     if (searchQuery.length < 2) { addToast('Enter at least 2 characters.', 'info'); return; }
-    setLoading(true); setSearchResults([]);
+    setLoading(true); setSearchResults([]); setError(null);
     try {
-      const res = await fetch(`/api/medicine/search?query=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + `/api/medicine/search?query=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
-      setSearchResults(data);
+      if (res.ok) {
+        setSearchResults(data);
+        setError(null);
+        if (data.length === 0) {
+          addToast('No medicines found matching that name.', 'info');
+        }
+      } else {
+        const errorMsg = data.detail || 'Medicine search failed.';
+        setError(errorMsg);
+        addToast(errorMsg, 'error');
+      }
     } catch {
-      setSearchResults([
-        { product_name: 'Dolo 650mg Tablet', salt_composition: 'Paracetamol (650mg)', side_effects: 'Mild nausea if taken on empty stomach.', drug_interactions: 'Avoid alcohol during medication.', product_price: '₹34.50 / Strip' },
-        { product_name: 'Pan-D Capsule', salt_composition: 'Pantoprazole (40mg) + Domperidone (30mg)', side_effects: 'Dry mouth, headache.', drug_interactions: 'Do not take with antacids simultaneously.', product_price: '₹142.00 / Strip' }
-      ]);
+      const errorMsg = 'Unable to connect to medicine database service. Please verify backend is running.';
+      setError(errorMsg);
+      addToast(errorMsg, 'error');
     }
     setLoading(false);
   };
 
   const suggestBySymptom = async (symptoms) => {
     if (!symptoms || symptoms.length < 2) { addToast('Enter at least 2 characters.', 'info'); return; }
-    setLoading(true); setSearchResults([]);
+    setLoading(true); setSearchResults([]); setError(null);
     try {
-      const res = await fetch(`/api/medicine/suggest?symptoms=${encodeURIComponent(symptoms)}`);
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + `/api/medicine/suggest?symptoms=${encodeURIComponent(symptoms)}`);
       const data = await res.json();
-      setSearchResults(data);
+      if (res.ok) {
+        setSearchResults(data);
+        setError(null);
+        if (data.length === 0) {
+          addToast('No medicine suggestions found for those symptoms.', 'info');
+        }
+      } else {
+        const errorMsg = data.detail || 'Medicine suggestion failed.';
+        setError(errorMsg);
+        addToast(errorMsg, 'error');
+      }
     } catch {
-      setSearchResults([
-        { product_name: 'Paracetamol 500mg', salt_composition: 'Acetaminophen', side_effects: 'None under recommended dosage.', drug_interactions: 'Avoid with other paracetamol products.', product_price: '₹18.00 / Strip' }
-      ]);
+      const errorMsg = 'Unable to connect to medicine suggestion service. Please verify backend is running.';
+      setError(errorMsg);
+      addToast(errorMsg, 'error');
     }
     setLoading(false);
   };
@@ -88,11 +122,14 @@ export default function MedicineDetection({ addToast }) {
       addToast('Code, Name, and Manufacturer are required!', 'error');
       return;
     }
-    setLoading(true);
+    setLoading(true); setError(null);
     try {
       const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/medicine/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
         body: JSON.stringify(regForm)
       });
       const data = await res.json();
@@ -103,7 +140,7 @@ export default function MedicineDetection({ addToast }) {
         addToast(data.detail || 'Failed to register medicine.', 'error');
       }
     } catch {
-      addToast('Medicine batch registered in local registry.', 'success');
+      addToast('Unable to connect to medicine registry service. Registration failed.', 'error');
     }
     setLoading(false);
   };
@@ -114,12 +151,13 @@ export default function MedicineDetection({ addToast }) {
     if (file && file.type.startsWith('image/')) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+      setError(null);
     }
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) { setImageFile(file); setImagePreview(URL.createObjectURL(file)); }
+    if (file) { setImageFile(file); setImagePreview(URL.createObjectURL(file)); setError(null); }
   };
 
   const statusBadge = (status) => {
@@ -129,9 +167,16 @@ export default function MedicineDetection({ addToast }) {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <h1>💊 Computer Vision Medicine Verification & DB</h1>
-        <p>Verify pharmaceutical authenticity via OCR packaging inspection, QR code verification, or query national medicine databases.</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+        <img src="/brand_logo.png" alt="Medicure Brand Logo" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} />
+        <div>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '800' }}>Computer Vision Medicine Verification & DB</h1>
+          <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '13.5px' }}>Verify pharmaceutical authenticity via OCR packaging inspection, QR code verification, or query national medicine databases.</p>
+        </div>
+      </div>
+
+      <div className="card" style={{ borderLeft: '4px solid var(--accent-yellow)', background: 'rgba(245, 158, 11, 0.08)', padding: '12px 18px', marginBottom: '20px' }}>
+        <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⚠️ Pharmacy Notice:</span> Verify physical tamper-evident seal and hologram before ingestion. Suspicious scan count triggers fraud review.
       </div>
 
       {/* Guide Banner */}
@@ -164,7 +209,7 @@ export default function MedicineDetection({ addToast }) {
               { id: 'search', label: '🔎 Drug Dataset' },
               { id: 'register', label: '➕ Register Batch' }
             ].map(t => (
-              <button key={t.id} className={`btn ${tab === t.id ? 'btn-primary' : 'btn-outline'}`} onClick={() => { setTab(t.id); setResult(null); }}>
+              <button key={t.id} className={`btn ${tab === t.id ? 'btn-primary' : 'btn-outline'}`} onClick={() => { setTab(t.id); setResult(null); setError(null); }}>
                 {t.label}
               </button>
             ))}
@@ -309,6 +354,22 @@ export default function MedicineDetection({ addToast }) {
 
         {/* Right Panel - Results */}
         <div className="result-box" style={{ height: 'fit-content', maxHeight: tab === 'search' ? '650px' : 'none', overflowY: 'auto' }}>
+          {error && (
+            <div style={{
+              padding: '16px 20px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid var(--accent-red, #ef4444)',
+              borderRadius: '14px',
+              textAlign: 'left',
+              marginBottom: '16px'
+            }} className="animate-fade-in">
+              <div style={{ color: '#ef4444', fontWeight: '800', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ⚠️ Service Error
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>{error}</p>
+            </div>
+          )}
+
           {tab === 'register' ? (
              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                <div style={{ fontSize: '48px', marginBottom: '14px' }}>🗄️</div>
@@ -318,7 +379,7 @@ export default function MedicineDetection({ addToast }) {
           ) : tab === 'search' ? (
             <>
               <div className="result-header">📦 Search Results ({searchResults.length})</div>
-              {searchResults.length === 0 && !loading && (
+              {searchResults.length === 0 && !loading && !error && (
                 <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: '50px', marginBottom: '14px' }}>🔎</div>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Search drug compositions, side effects, and pricing from our database.</p>
@@ -344,7 +405,7 @@ export default function MedicineDetection({ addToast }) {
           ) : (
             <>
               <div className="result-header">🔎 Diagnostic Scan Result</div>
-              {!result && !loading && (
+              {!result && !loading && !error && (
                 <div style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: '50px', marginBottom: '14px' }}>💊</div>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Enter a batch code or upload package photo to view verification report.</p>

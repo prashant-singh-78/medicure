@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 
 const skinConditions = [
-  { name: 'Acne & Inflammatory Papules', confidence: '94.2%', severity: 'Mild', img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=300&q=80' },
-  { name: 'Eczema & Atopic Dermatitis', confidence: '91.8%', severity: 'Moderate', img: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=300&q=80' },
-  { name: 'Psoriasis & Plaque Lesions', confidence: '89.5%', severity: 'Requires Care', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=300&q=80' }
+  { name: 'Healthy Surface Tissue', confidence: '86.7% Recall', severity: 'Baseline Healthy', img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=300&q=80' },
+  { name: 'Mild Inflammatory Acne', confidence: '73.1% Recall', severity: 'Mild Papules', img: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=300&q=80' },
+  { name: 'Severe Cystic / Nodular Acne', confidence: '69.3% Recall', severity: 'Specialist Care', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=300&q=80' },
+  { name: 'Rosacea & Facial Erythema', confidence: '76.2% Recall', severity: 'Erythema Pattern', img: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=300&q=80' }
 ];
 
 export default function SkinAnalyzer({ addToast }) {
@@ -11,6 +12,7 @@ export default function SkinAnalyzer({ addToast }) {
   const [imageBase64, setImageBase64] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleImageChange = (e) => {
@@ -26,6 +28,7 @@ export default function SkinAnalyzer({ addToast }) {
         setImagePreview(reader.result);
         setImageBase64(reader.result);
         setResult(null);
+        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -39,6 +42,7 @@ export default function SkinAnalyzer({ addToast }) {
 
     setAnalyzing(true);
     setResult(null);
+    setError(null);
 
     try {
       const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/skin/analyze', {
@@ -51,18 +55,33 @@ export default function SkinAnalyzer({ addToast }) {
       
       if (res.ok) {
         setResult(data);
+        setError(null);
         addToast('Skin analysis complete!', 'success');
+
+        const token = localStorage.getItem('token');
+        if (token) {
+          fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              activity_type: 'skin',
+              title: `Skin Analysis: ${data.condition || data.prediction || 'Lesion Assessment'}`,
+              details: `Confidence: ${data.confidence || 0}%\nRecommendation: ${data.recommendation || 'Consult dermatologist'}`
+            })
+          }).catch(e => console.error(e));
+        }
       } else {
-        addToast(data.detail || 'Failed to analyze skin.', 'error');
+        const errorMsg = data.detail || 'Failed to analyze skin.';
+        setError(errorMsg);
+        addToast(errorMsg, 'error');
       }
-    } catch (err) {
-      setResult({
-        problem: 'Mild Inflammatory Acne / Rosacea',
-        confidence: 94.5,
-        health_percentage: 82,
-        recommendation: 'Apply gentle non-comedogenic cleanser daily. Consult our registered dermatologist if redness persists.'
-      });
-      addToast('Dermatology AI vision scan complete!', 'success');
+    } catch {
+      const errorMsg = 'Unable to connect to dermatology diagnostic service. Please verify backend service is running and retry.';
+      setError(errorMsg);
+      addToast(errorMsg, 'error');
     } finally {
       setAnalyzing(false);
     }
@@ -70,9 +89,16 @@ export default function SkinAnalyzer({ addToast }) {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <h1>🔍 Dermatology AI Skin Problem Detector</h1>
-        <p>Capture or upload a macro photo of any skin patch or rash for instant deep neural network diagnostic scanning.</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+        <img src="/brand_logo.png" alt="Medicure Brand Logo" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} />
+        <div>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '800' }}>Dermatology AI Skin Problem Detector</h1>
+          <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '13.5px' }}>Capture or upload a macro photo of any skin patch or rash for instant deep neural network diagnostic scanning.</p>
+        </div>
+      </div>
+
+      <div className="card" style={{ borderLeft: '4px solid var(--accent-yellow)', background: 'rgba(245, 158, 11, 0.08)', padding: '12px 18px', marginBottom: '20px' }}>
+        <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⚠️ Clinical Advisory:</span> Dermatology AI analysis is an academic screening prototype (MobileNetV2). Not for clinical malignant melanoma diagnosis. Always consult a certified dermatologist.
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
@@ -134,6 +160,25 @@ export default function SkinAnalyzer({ addToast }) {
             </div>
           )}
 
+          {error && (
+            <div style={{
+              padding: '16px 20px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid var(--accent-red, #ef4444)',
+              borderRadius: '14px',
+              textAlign: 'left',
+              marginBottom: '16px'
+            }} className="animate-fade-in">
+              <div style={{ color: '#ef4444', fontWeight: '800', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ⚠️ Diagnostic Service Error
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 12px 0' }}>{error}</p>
+              <button className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }} onClick={handleAnalyze}>
+                🔄 Retry Analysis
+              </button>
+            </div>
+          )}
+
           {result && (
             <div style={{
               padding: '20px',
@@ -179,6 +224,7 @@ export default function SkinAnalyzer({ addToast }) {
                 setImagePreview(null);
                 setImageBase64(null);
                 setResult(null);
+                setError(null);
               }}>
                 🔄 Scan Another Lesion
               </button>
@@ -189,9 +235,9 @@ export default function SkinAnalyzer({ addToast }) {
         {/* Right Reference Models Card */}
         <div>
           <div className="card">
-            <div className="card-title">🔬 Covered AI Dermatology Models</div>
+            <div className="card-title">🔬 Covered Dermatology Vision Classes</div>
             <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginBottom: '18px', lineHeight: '1.6' }}>
-              Our multi-layered ResNet computer vision models screen for over 25 common dermatological conditions:
+              Our MobileNetV2 computer vision model (v2.0) is trained to screen for 4 surface dermatological classes with 76.3% balanced academic test accuracy:
             </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -201,7 +247,7 @@ export default function SkinAnalyzer({ addToast }) {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>{cond.name}</div>
                     <div style={{ display: 'flex', gap: '12px', fontSize: '12px', marginTop: '4px' }}>
-                      <span style={{ color: 'var(--accent-cyan)', fontWeight: '600' }}>Accuracy: {cond.confidence}</span>
+                      <span style={{ color: 'var(--accent-cyan)', fontWeight: '600' }}>Evaluation: {cond.confidence}</span>
                       <span style={{ color: 'var(--accent-yellow)', fontWeight: '600' }}>{cond.severity}</span>
                     </div>
                   </div>

@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 
 const DISEASE_OPTIONS = [
-  { value: 'parkinsons', label: "Parkinson's Disease (Vocal Tremor)" },
-  { value: 'respiratory', label: 'Respiratory Infection & Wheezing' },
-  { value: 'covid', label: 'COVID-19 (Cough Acoustic Biomarker)' },
+  { value: 'parkinsons', label: "Parkinson's Disease (Vocal Tremor Screening)" },
+  { value: 'respiratory', label: 'Respiratory Infection (Unavailable - No Validated Model)', disabled: true },
+  { value: 'covid', label: 'COVID-19 Cough Biomarker (Unavailable - No Validated Model)', disabled: true },
 ];
 
 export default function VoiceDetection({ addToast }) {
@@ -12,6 +12,7 @@ export default function VoiceDetection({ addToast }) {
   const [audioURL, setAudioURL] = useState(null);
   const [disease, setDisease] = useState('parkinsons');
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [seconds, setSeconds] = useState(0);
 
@@ -34,9 +35,10 @@ export default function VoiceDetection({ addToast }) {
       setIsRecording(true);
       setSeconds(0);
       setResult(null);
+      setError(null);
       timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
       addToast('Recording started!', 'info');
-    } catch (e) {
+    } catch {
       addToast('Microphone access denied. Please allow microphone.', 'error');
     }
   };
@@ -56,6 +58,7 @@ export default function VoiceDetection({ addToast }) {
     }
     setLoading(true);
     setResult(null);
+    setError(null);
     try {
       const formData = new FormData();
       formData.append('file', audioBlob, 'recording.webm');
@@ -64,20 +67,38 @@ export default function VoiceDetection({ addToast }) {
         method: 'POST', body: formData,
       });
       const data = await res.json();
-      setResult(data);
-      addToast('Analysis complete!', 'success');
+      if (res.ok) {
+        setResult(data);
+        setError(null);
+        addToast('Voice acoustic analysis complete!', 'success');
+
+        const token = localStorage.getItem('token');
+        if (token) {
+          fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/history', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              activity_type: 'voice',
+              title: `Voice Scan: ${data.disease || disease}`,
+              details: `Assessment: ${data.assessment || data.prediction || 'Completed'}\nConfidence: ${data.confidence || 0}%\nRecommendations: ${data.recommendations || 'Regular vocal exercises'}`
+            })
+          }).catch(e => console.error(e));
+        }
+      } else {
+        const errorMsg = data.detail || 'Voice analysis failed on server.';
+        setError(errorMsg);
+        addToast(errorMsg, 'error');
+      }
     } catch {
-      // Demo fallback when backend not running
-      const demo = {
-        disease: disease,
-        prediction: Math.random() > 0.5 ? 'Positive Risk Signal Detected' : 'Normal / Low Risk Signal',
-        confidence: (Math.random() * 20 + 78).toFixed(1),
-        features: { mdvp_fo: (152.4 + Math.random() * 30).toFixed(2), jitter: (0.0034 + Math.random() * 0.002).toFixed(4), shimmer: (0.024 + Math.random() * 0.01).toFixed(4), hnr: (24.8 + Math.random() * 5).toFixed(2) },
-      };
-      setResult(demo);
-      addToast('Acoustic feature analysis complete.', 'success');
+      const errorMsg = 'Unable to connect to acoustic analysis server. Please check backend status and retry.';
+      setError(errorMsg);
+      addToast(errorMsg, 'error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const confidenceClass = result
@@ -88,9 +109,16 @@ export default function VoiceDetection({ addToast }) {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <h1>🎤 Vocal Biomarker Acoustic Diagnostic Engine</h1>
-        <p>Record your voice to extract jitter, shimmer, and MFCC frequency acoustic biomarkers for early disease detection.</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+        <img src="/brand_logo.png" alt="Medicure Brand Logo" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} />
+        <div>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '800' }}>Vocal Biomarker Acoustic Diagnostic Engine</h1>
+          <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '13.5px' }}>Record your voice to extract jitter, shimmer, and MFCC frequency acoustic biomarkers for early disease detection.</p>
+        </div>
+      </div>
+
+      <div className="card" style={{ borderLeft: '4px solid var(--accent-yellow)', background: 'rgba(245, 158, 11, 0.08)', padding: '12px 18px', marginBottom: '20px' }}>
+        <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⚠️ Acoustic Protocol:</span> Please maintain sustained phonation (/a/) in a quiet environment. Vocal perturbation screening (DSP).
       </div>
 
       {/* Guide Banner */}
@@ -119,9 +147,13 @@ export default function VoiceDetection({ addToast }) {
 
           {/* Disease Selector */}
           <div className="input-group" style={{ width: '100%' }}>
-            <label className="input-label">Target Disease Model</label>
+            <label className="input-label">Target Evaluation Model</label>
             <select className="input-field" value={disease} onChange={e => setDisease(e.target.value)}>
-              {DISEASE_OPTIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+              {DISEASE_OPTIONS.map(d => (
+                <option key={d.value} value={d.value} disabled={d.disabled}>
+                  {d.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -158,14 +190,34 @@ export default function VoiceDetection({ addToast }) {
             onClick={analyzeVoice}
             disabled={loading || !audioBlob}
           >
-            {loading ? <><span className="spinner" /> Processing Neural Network...</> : '🧠 Run Vocal Biomarker Scan'}
+            {loading ? <><span className="spinner" /> Analyzing Acoustic Signals...</> : '🔬 Run Acoustic Biomarker Screening'}
           </button>
         </div>
 
         {/* Result Card */}
         <div className="result-box">
-          <div className="result-header">📊 Neural Network Diagnostic Output</div>
-          {!result && !loading && (
+          <div className="result-header">📊 Acoustic Biomarker Screening Output</div>
+          
+          {error && (
+            <div style={{
+              padding: '16px 20px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid var(--accent-red, #ef4444)',
+              borderRadius: '14px',
+              textAlign: 'left',
+              marginBottom: '16px'
+            }} className="animate-fade-in">
+              <div style={{ color: '#ef4444', fontWeight: '800', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ⚠️ Analysis Error
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 12px 0' }}>{error}</p>
+              <button className="btn btn-outline" style={{ justifyContent: 'center' }} onClick={analyzeVoice}>
+                🔄 Retry Analysis
+              </button>
+            </div>
+          )}
+
+          {!result && !loading && !error && (
             <div className="prediction-result">
               <div className="result-label neutral">Awaiting audio sample for extraction...</div>
               <div style={{ marginTop: '20px', fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: '1.8' }}>
@@ -225,8 +277,14 @@ export default function VoiceDetection({ addToast }) {
                 </div>
               )}
 
-              <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(14, 165, 233, 0.08)', borderRadius: '10px', fontSize: '12.5px', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-                ℹ️ Diagnostic signal generated for clinical screening reference.
+              {result.note && (
+                <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(234, 179, 8, 0.08)', borderRadius: '10px', fontSize: '12px', color: 'var(--text-secondary)', border: '1px solid rgba(234, 179, 8, 0.2)', lineHeight: '1.5' }}>
+                  ⚠️ <strong>Methodology Note:</strong> {result.note}
+                </div>
+              )}
+
+              <div style={{ marginTop: '10px', padding: '12px', background: 'rgba(14, 165, 233, 0.08)', borderRadius: '10px', fontSize: '12px', color: 'var(--text-secondary)', border: '1px solid var(--border)', lineHeight: '1.5' }}>
+                ℹ️ {result.disclaimer || 'Experimental screening tool only; not a substitute for clinical neurological examination.'}
               </div>
             </div>
           )}

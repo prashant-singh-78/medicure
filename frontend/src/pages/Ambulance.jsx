@@ -4,26 +4,26 @@ const defaultAmbulances = [
   {
     vehicle_number: 'DL-01-EV-1088',
     type: 'ICU on Wheels',
-    contact: '108 / +91 99999 11111',
+    contact: '108',
     location: 'Central Trauma Hospital Unit, Sector 4',
-    eta: '6-8 Mins ETA',
-    status: 'Ready for Dispatch'
+    eta: 'Dial 108 for Dispatch',
+    status: 'Ready for Call'
   },
   {
     vehicle_number: 'MH-02-ER-4521',
     type: 'Advanced ACLS',
-    contact: '102 / +91 98888 22222',
+    contact: '102',
     location: 'Medicure Emergency Bay, North Division',
-    eta: '8-10 Mins ETA',
+    eta: 'Dial 102 for Dispatch',
     status: 'On Standby'
   },
   {
     vehicle_number: 'KA-05-AM-9002',
     type: 'Basic BLS Ambulance',
-    contact: '+91 97777 33333',
+    contact: '108',
     location: 'Metro ER Station, East Sector',
-    eta: '5-7 Mins ETA',
-    status: 'Ready for Dispatch'
+    eta: 'Dial 108 for Dispatch',
+    status: 'Ready for Call'
   }
 ];
 
@@ -54,14 +54,20 @@ export default function Ambulance({ addToast }) {
     try {
       const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/ambulance/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
         body: JSON.stringify(formData)
       });
+      const data = await res.json();
       if (res.ok) {
         addToast('Ambulance vehicle registered!', 'success');
         setShowForm(false);
         setFormData({ vehicle_number: '', contact: '', location: '', type: 'Basic' });
         fetchAmbulances();
+      } else {
+        addToast(data.detail || 'Failed to register ambulance. Admin authorization required.', 'error');
       }
     } catch {
       addToast('Failed to register ambulance.', 'error');
@@ -72,16 +78,16 @@ export default function Ambulance({ addToast }) {
     setDispatching(vehicleNo);
     setTimeout(() => {
       setDispatching(null);
-      addToast(`Ambulance ${vehicleNo} dispatched to your location! Driver will call shortly.`, 'success');
-    }, 2000);
+      addToast(`Notice: Automated GPS dispatch is not supported in this web demo. Please dial 108 or call the station hotline directly.`, 'warning');
+    }, 1500);
   };
 
   return (
     <div className="animate-fade-in">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
-          <h1>🚑 24/7 Emergency Ambulance & Trauma Fleet</h1>
-          <p>Instant GPS location dispatch for Basic, ACLS, and Mobile ICU Ambulances.</p>
+          <h1>🚑 Emergency Ambulance Directory & Emergency Contacts</h1>
+          <p>Verified telephone contacts and emergency hotlines for Basic, ACLS, and Mobile ICU ambulance services.</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? '✖ Close Form' : '➕ Register Fleet Unit'}
@@ -93,13 +99,14 @@ export default function Ambulance({ addToast }) {
         <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
           <div style={{ fontSize: '28px' }}>📖</div>
           <div>
-            <div style={{ fontWeight: '800', fontSize: '15px', color: 'var(--accent-red)', marginBottom: '4px' }}>Kya Use Hai & Kaise Use Karein (Emergency Ambulance Guide)</div>
+            <div style={{ fontWeight: '800', fontSize: '15px', color: 'var(--accent-red)', marginBottom: '4px' }}>Ambulance Directory & Emergency Protocol</div>
             <div style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              <strong>• Iska Use Kya Hai?</strong> Emergency me paas ki ICU, Cardiac (ACLS), ya Basic emergency vehicle ko apne GPS location par turant dispatch karne ke liye.<br/>
-              <strong>• Kaise Use Karein?</strong>
+              <strong>• Iska Use Kya Hai?</strong> Emergency medical transport ke liye verified hospital trauma units aur emergency ambulance helplines access karein.<br/>
+              <strong>• Emergency Protocol:</strong>
               <ul style={{ paddingLeft: '20px', marginTop: '6px' }}>
-                <li>Direct Hotline for Urgent Help: Red <strong>"📞 Call 108 Emergency"</strong> button par tap karke baat karein.</li>
-                <li>Live GPS Ambulance Dispatch: Apne area ke ambulance card par <strong>"⚡ Dispatch Now"</strong> click karein — 6-8 mins ETA me responder aap tak pahunchega.</li>
+                <li>Immediate Emergency Response: Dial <strong>108</strong> (National Ambulance Service) directly from your device.</li>
+                <li>Direct Station Hotline: Tap the phone link on any ambulance card to connect directly with the vehicle driver or hospital dispatch desk.</li>
+                <li>Notice: Automated GPS cellular dispatch is not supported in this web application. Always confirm transport by telephone.</li>
               </ul>
             </div>
           </div>
@@ -113,7 +120,7 @@ export default function Ambulance({ addToast }) {
             <div style={{ fontSize: '36px' }} className="animate-float">🚨</div>
             <div>
               <div style={{ fontWeight: '800', fontSize: '18px', color: 'var(--accent-red)' }}>National Emergency Ambulance Hotline</div>
-              <div style={{ fontSize: '13.5px', color: 'var(--text-secondary)' }}>Direct line to Medicure Hospital Central ER Command Room</div>
+              <div style={{ fontSize: '13.5px', color: 'var(--text-secondary)' }}>Direct line to National Medical Emergency Response</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
@@ -170,7 +177,7 @@ export default function Ambulance({ addToast }) {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-input)', borderRadius: '10px', fontSize: '12.5px', marginBottom: '16px', border: '1px solid var(--border)' }}>
                 <span style={{ color: 'var(--accent-green)', fontWeight: '700' }}>● {amb.status || 'Active'}</span>
-                <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⏱️ {amb.eta || '8 Mins ETA'}</span>
+                <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⏱️ {amb.eta || 'Dial 108'}</span>
               </div>
 
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -183,7 +190,7 @@ export default function Ambulance({ addToast }) {
                   disabled={dispatching === amb.vehicle_number}
                   onClick={() => handleDispatch(amb.vehicle_number)}
                 >
-                  {dispatching === amb.vehicle_number ? <span className="spinner" /> : '⚡ Dispatch Now'}
+                  {dispatching === amb.vehicle_number ? <span className="spinner" /> : '🚨 Call for Dispatch'}
                 </button>
               </div>
             </div>

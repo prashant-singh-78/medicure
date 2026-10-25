@@ -13,7 +13,7 @@ export default function MedicineSuggestion({ addToast }) {
     }
     setLoading(true);
     try {
-      const res = await fetch(`/api/medicine/suggest?symptoms=${encodeURIComponent(symptoms)}`);
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + `/api/medicine/suggest?symptoms=${encodeURIComponent(symptoms)}`);
       const data = await res.json();
       setResults(data);
       if (data.length === 0) {
@@ -27,18 +27,25 @@ export default function MedicineSuggestion({ addToast }) {
 
   return (
     <div className="suggestion-page">
-      <div className="page-header">
-        <h1>🚀 Medicine Suggestion AI</h1>
-        <p>Get medicine recommendations based on your symptoms or disease names using our massive Indian medicine dataset.</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+        <img src="/brand_logo.png" alt="Medicure Brand Logo" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--accent-red)', boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)', flexShrink: 0 }} />
+        <div>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '800' }}>Medicine Suggestion Engine</h1>
+          <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '13.5px' }}>Explore medicine recommendations based on symptoms or disease indication from our verified pharmaceutical catalog.</p>
+        </div>
+      </div>
+
+      <div className="card" style={{ borderLeft: '4px solid var(--accent-yellow)', background: 'rgba(245, 158, 11, 0.08)', padding: '12px 18px', marginBottom: '20px' }}>
+        <span style={{ color: 'var(--accent-yellow)', fontWeight: '700' }}>⚠️ Pharmacy Advisory:</span> Suggestions are for educational and clinical inquiry purposes only. Prescription medications require qualified physician authorization.
       </div>
 
       <div className="card" style={{ maxWidth: '800px', margin: '0 auto 40px' }}>
         <form onSubmit={handleSuggest} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
           <div className="input-group" style={{ flex: 1, marginBottom: 0 }}>
-            <label className="input-label">How are you feeling? (Symptoms / Disease)</label>
+            <label className="input-label" htmlFor="med-symptom-input">How are you feeling? (Symptoms / Disease)</label>
             <input 
               className="input-field" 
-              placeholder="e.g. Fever, Cough, Diabetes, Hypertension..." 
+              id="med-symptom-input" placeholder="e.g. Fever, Cough, Diabetes, Hypertension..." 
               value={symptoms}
               onChange={e => setSymptoms(e.target.value)}
             />

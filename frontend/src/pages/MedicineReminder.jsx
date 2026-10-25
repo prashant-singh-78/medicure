@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function MedicineReminder({ addToast }) {
   const [reminders, setReminders] = useState([]);
@@ -10,20 +10,53 @@ export default function MedicineReminder({ addToast }) {
     days: 'Daily'
   });
 
-  useEffect(() => {
-    fetchReminders();
-  }, []);
-
-  const fetchReminders = async () => {
+  const fetchReminders = useCallback(async () => {
     try {
-      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/reminder/');
+      const token = localStorage.getItem('token');
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/reminder/', {
+        headers: {
+          'Authorization': `Bearer ${token || ''}`
+        }
+      });
+      if (res.status === 401) {
+        window.dispatchEvent(new CustomEvent('medicure:session-expired'));
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (res.ok) setReminders(data);
     } catch {
       addToast('Error loading reminders.', 'error');
     }
     setLoading(false);
-  };
+  }, [addToast]);
+
+  useEffect(() => {
+    let ignore = false;
+    const loadData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/reminder/', {
+          headers: {
+            'Authorization': `Bearer ${token || ''}`
+          }
+        });
+        if (res.status === 401) {
+          window.dispatchEvent(new CustomEvent('medicure:session-expired'));
+          if (!ignore) setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        if (res.ok && !ignore) setReminders(data);
+      } catch {
+        addToast('Error loading reminders.', 'error');
+      }
+      if (!ignore) setLoading(false);
+    };
+
+    loadData();
+    return () => { ignore = true; };
+  }, [addToast]);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -32,13 +65,22 @@ export default function MedicineReminder({ addToast }) {
     try {
       const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/reminder/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
         body: JSON.stringify(newReminder)
       });
+      if (res.status === 401) {
+        window.dispatchEvent(new CustomEvent('medicure:session-expired'));
+        return;
+      }
       if (res.ok) {
         addToast('Reminder added successfully!', 'success');
         setNewReminder({ medicine_name: '', dosage: '', time: '08:00', days: 'Daily' });
         fetchReminders();
+      } else {
+        addToast('Failed to add reminder.', 'error');
       }
     } catch {
       addToast('Failed to add reminder.', 'error');
@@ -47,7 +89,17 @@ export default function MedicineReminder({ addToast }) {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`/api/reminder/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('token');
+      const res = await fetch((import.meta.env.VITE_API_BASE_URL || '') + `/api/reminder/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token || ''}`
+        }
+      });
+      if (res.status === 401) {
+        window.dispatchEvent(new CustomEvent('medicure:session-expired'));
+        return;
+      }
       if (res.ok) {
         setReminders(reminders.filter(r => r.id !== id));
         addToast('Reminder removed.', 'info');

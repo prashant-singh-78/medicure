@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function Meditation({ addToast }) {
   const [techniques, setTechniques] = useState([]);
@@ -7,7 +7,6 @@ export default function Meditation({ addToast }) {
   const [timer, setTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState(300);
-  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/meditation/techniques')
@@ -21,32 +20,41 @@ export default function Meditation({ addToast }) {
         ]);
       });
     
-    const saved = localStorage.getItem('meditation_log');
-    if (saved) setHistory(JSON.parse(saved).slice(0, 5));
+
   }, []);
 
-  useEffect(() => {
-    let interval;
-    if (isTimerRunning && timer > 0) {
-      interval = setInterval(() => setTimer(t => t - 1), 1000);
-    } else if (timer === 0 && isTimerRunning) {
-      setIsTimerRunning(false);
-      completeSession();
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timer]);
-
-  const completeSession = () => {
+  const completeSession = useCallback(() => {
     addToast('Meditation complete. Welcome back!', 'success');
-    const newEntry = {
-      date: new Date().toLocaleString(),
-      duration: selectedDuration / 60,
-      technique: activeTechnique?.name || 'Silent'
-    };
-    const updated = [newEntry, ...history];
-    setHistory(updated.slice(0, 5));
-    localStorage.setItem('meditation_log', JSON.stringify(updated));
-  };
+    try {
+      const saved = localStorage.getItem('meditation_log');
+      const prev = saved ? JSON.parse(saved) : [];
+      const newEntry = {
+        date: new Date().toLocaleString(),
+        duration: selectedDuration / 60,
+        technique: activeTechnique?.name || 'Silent'
+      };
+      const updated = [newEntry, ...prev].slice(0, 5);
+      localStorage.setItem('meditation_log', JSON.stringify(updated));
+    } catch {
+      // Ignore storage errors in restricted contexts
+    }
+  }, [addToast, selectedDuration, activeTechnique]);
+
+  useEffect(() => {
+    if (!isTimerRunning) return;
+    const interval = setInterval(() => {
+      setTimer(t => {
+        if (t <= 1) {
+          clearInterval(interval);
+          setIsTimerRunning(false);
+          completeSession();
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isTimerRunning, completeSession]);
 
   const formatTime = (secs) => {
     const m = Math.floor(secs / 60);
